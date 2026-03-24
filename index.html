@@ -3,133 +3,182 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Entreno Pro - Inteligente</title>
+    <title>Entreno Pro - Master + Ayuda</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        body { background-color: #020617; color: white; font-family: -apple-system, sans-serif; }
-        .apple-card { background: #1e293b; border-radius: 24px; padding: 20px; margin-bottom: 15px; border: 1px solid #334155; }
-        .modo-serie { background: #450a0a !important; border-color: #ef4444; }
-        .modo-descanso { background: #064e3b !important; border-color: #10b981; }
-        .heart-rate-circle { width: 100px; height: 100px; border-radius: 50%; border: 4px solid #334155; display: flex; flex-direction: column; align-items: center; justify-content: center; margin: 0 auto; }
-        .anim-pulse { animation: pulse-red 0.8s infinite; }
-        @keyframes pulse-red { 0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); } 70% { box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); } }
+        body { background-color: #020617; color: white; font-family: -apple-system, sans-serif; -webkit-tap-highlight-color: transparent; overflow-x: hidden; }
+        .apple-card { background: #1e293b; border-radius: 24px; padding: 20px; margin-bottom: 12px; border: 1px solid #334155; }
+        .modo-serie { background: #450a0a !important; border-color: #ef4444; box-shadow: 0 0 20px rgba(239, 68, 68, 0.2); }
+        .modo-descanso { background: #064e3b !important; border-color: #10b981; box-shadow: 0 0 20px rgba(16, 185, 129, 0.2); }
+        .dropdown-content { max-height: 0; overflow: hidden; transition: max-height 0.4s ease; }
+        .dropdown-open { max-height: 1000px; }
+        .chip { padding: 8px; border-radius: 12px; font-size: 10px; font-weight: bold; background: #334155; border: 1px solid transparent; text-align: center; cursor: pointer; }
+        .chip.active { background: #2563eb; border-color: #60a5fa; color: white; }
+        input[type="number"]::-webkit-inner-spin-button { display: none; }
         
-        /* Estilos para el desplegable */
-        .dropdown-content { max-height: 0; overflow: hidden; transition: max-height 0.3s ease-out; }
-        .dropdown-open { max-height: 500px; overflow-y: auto; }
-        .chip { padding: 8px 12px; border-radius: 10px; font-size: 11px; font-weight: bold; background: #334155; border: 1px solid transparent; transition: 0.2s; text-align: center; cursor: pointer; }
-        .chip.active { background: #1d4ed8; border-color: #60a5fa; color: white; }
+        /* Estilos para el Panel de Ayuda (Modal) */
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); display: none; justify-content: center; align-items: center; z-index: 1000; opacity: 0; transition: opacity 0.3s; }
+        .modal-overlay.active { display: flex; opacity: 1; }
+        .modal-content { background: #1e293b; width: 90%; max-width: 350px; border-radius: 24px; border: 2px solid #334155; padding: 20px; transform: scale(0.9); transition: transform 0.3s; }
+        .modal-overlay.active .modal-content { transform: scale(1); }
+        .help-gif { width: 100%; border-radius: 15px; margin-bottom: 15px; border: 2px solid #334155; }
     </style>
 </head>
-<body class="p-5 pb-32">
+<body class="p-4 pb-32">
 
-    <div class="apple-card text-center border-t-4 border-red-500">
-        <div id="heart-box" class="heart-rate-circle mb-2">
-            <span id="bpm-val" class="text-4xl font-black">--</span>
-            <span class="text-[9px] font-bold text-red-500 uppercase">BPM</span>
+    <div id="help-modal" class="modal-overlay" onclick="cerrarAyuda()">
+        <div class="modal-content text-center" onclick="event.stopPropagation()">
+            <h3 id="help-title" class="text-xl font-black uppercase mb-3 tracking-tight">Nombre</h3>
+            <img id="help-gif-img" src="" alt="Demostración del ejercicio" class="help-gif">
+            <div id="help-text" class="text-xs text-gray-300 space-y-2 text-left bg-slate-900/50 p-3 rounded-xl border border-slate-700">
+                </div>
+            <button onclick="cerrarAyuda()" class="mt-5 w-full bg-gray-700 py-3 rounded-xl text-xs font-bold uppercase tracking-widest text-gray-300">Cerrar</button>
         </div>
-        <button onclick="conectarPolar()" id="btn-sensor" class="text-[10px] text-red-400 font-black uppercase tracking-widest">Vincular Polar</button>
+    </div>
+
+    <div class="apple-card flex justify-between items-center py-4 border-t-4 border-red-600">
+        <div class="text-left">
+            <p class="text-[9px] uppercase font-black text-gray-500 tracking-widest">Banda Polar</p>
+            <div class="flex items-baseline gap-1">
+                <span id="bpm-val" class="text-4xl font-black">--</span>
+                <span class="text-xs font-bold text-red-500">BPM</span>
+            </div>
+        </div>
+        <button onclick="conectarPolar()" id="btn-sensor" class="bg-red-600/10 text-red-500 px-4 py-2 rounded-full text-[10px] font-bold border border-red-500/20">VINCULAR</button>
     </div>
 
     <div class="apple-card">
-        <button onclick="toggleEquip()" class="w-full flex justify-between items-center py-1">
-            <span class="text-[11px] font-black uppercase text-blue-400 tracking-widest">Configurar Mi Gimnasio</span>
-            <span id="arrow" class="transition-transform duration-300">▼</span>
+        <button onclick="toggleEquip()" class="w-full flex justify-between items-center">
+            <span class="text-[10px] font-black uppercase text-blue-400">Mi Equipamiento</span>
+            <span id="arrow" class="text-xs transition-transform">▼</span>
         </button>
-        
-        <div id="equip-content" class="dropdown-content mt-4">
-            <p class="text-[9px] text-gray-400 mb-3 italic">Toca para añadir o quitar de tu inventario:</p>
-            <div id="lista-equip" class="grid grid-cols-2 gap-2">
-                </div>
+        <div id="equip-content" class="dropdown-content">
+            <div id="lista-equip" class="grid grid-cols-2 gap-2 mt-4"></div>
         </div>
     </div>
 
     <div id="timer-card" class="apple-card text-center transition-all duration-500">
         <div id="display" class="text-6xl font-mono font-bold mb-4 tracking-tighter">00:00</div>
         <div class="flex gap-2">
-            <button id="btn-principal" onclick="toggleFase()" class="flex-1 bg-blue-600 py-3 rounded-xl font-black text-xs uppercase">Iniciar Serie</button>
+            <button id="btn-principal" onclick="toggleFase()" class="flex-1 bg-blue-600 py-3 rounded-xl font-black text-xs uppercase tracking-widest">Iniciar Serie</button>
             <button id="btn-pausa" onclick="pausar()" class="w-14 bg-slate-700 py-3 rounded-xl font-bold opacity-30" disabled>||</button>
         </div>
     </div>
 
-    <h2 class="text-[11px] font-bold uppercase text-gray-500 ml-2 mb-2 tracking-widest">Rutina Recomendada</h2>
+    <div class="flex justify-between items-center px-2 mb-3">
+        <h2 class="text-[10px] font-black uppercase text-gray-500 tracking-widest">Ejercicios Disponibles</h2>
+        <button onclick="nuevoEjercicio()" class="text-[10px] bg-blue-500/20 text-blue-400 px-2 py-1 rounded-md border border-blue-400/20">+ Añadir</button>
+    </div>
+    
     <div id="contenedor-ejercicios"></div>
 
     <script>
         let segundos = 0, crono, estado = 'parado';
+        const catalogo = ["Ab wheel", "Anillas", "Banda elástica", "Barra de dominadas", "Barra Z", "Barra olímpica", "Bici carretera", "Bici montaña", "Cinta correr", "Esterilla", "Fitball", "Gomas elásticas", "Kettlebell", "Mancuernas", "Multiestación", "Poleas", "Rodillo de rulos", "Silla", "TRX"].sort();
 
-        // LISTA MAESTRA DE EQUIPAMIENTO (Orden Alfabético)
-        const catalogo = [
-            "Ab wheel", "Anillas", "Banda elástica", "Banda de resistencia", "Barra de dominadas", "Barra Z", "Barra olímpica",
-            "Bici de carretera", "Bici de montaña", "Bici estática", "Cajón pliométrico", "Cinta de correr", "Comba", "Esterilla",
-            "Fitball", "Gomas elásticas", "Kettlebell", "Mancuernas", "Multiestación", "Paralelas", "Pesas de tobillo",
-            "Poleas", "Rodillo de rulos", "Saco de boxeo", "Silla", "Step", "TRX"
-        ].sort();
+        // EJERCICIOS BASE CON AYUDA VINCULADA
+        let dbEjercicios = JSON.parse(localStorage.getItem('mis_ejercicios')) || [
+            {n: "Press de Banca", eq: "Multiestación"},
+            {n: "Polea Alta", eq: "Multiestación"},
+            {n: "Rodillo", eq: "Rodillo de rulos"}
+        ];
 
-        // INICIALIZACIÓN
+        // BASE DE DATOS DE AYUDA (GIFS Y TEXTO)
+        // Nota: He usado enlaces de ejemplo. Puedes cambiarlos por tus propios GIFs subidos a Imgur u otro servidor.
+        const ayudaEjercicios = {
+            "Press de Banca": {
+                gif: "https://media.giphy.com/media/l0HlCqV3E6o6k9uYw/giphy.gif", // Ejemplo Press Banca
+                puntos: ["Apoya bien los pies.", "Espalda recta, no arquees excesivamente.", "Baja la barra controlado hasta el pecho.", "Empuja fuerte hacia arriba."]
+            },
+            "Polea Alta": {
+                gif: "https://media.giphy.com/media/l0HlJgY6w7A8O38Gg/giphy.gif", // Ejemplo Polea
+                puntos: ["Pecho arriba.", "Codos hacia abajo y atrás.", "Contrae la espalda al final.", "Sube controlado."]
+            },
+            "Rodillo": {
+                gif: "https://media.giphy.com/media/3o7TKrEES8b7B5D61C/giphy.gif", // Ejemplo Ciclismo
+                puntos: ["Mantén cadencia constante.", "Espalda relajada.", "Mira al frente.", "Controla la respiración."]
+            }
+        };
+
         function init() {
             const lista = document.getElementById('lista-equip');
+            lista.innerHTML = '';
             catalogo.forEach(item => {
-                const isActive = localStorage.getItem('equip_' + item) === 'true';
-                lista.innerHTML += `
-                    <div id="item-${item}" onclick="toggleItem('${item}')" class="chip ${isActive ? 'active' : ''}">
-                        ${item.toUpperCase()}
-                    </div>`;
+                const active = localStorage.getItem('equip_' + item) === 'true';
+                lista.innerHTML += `<div onclick="toggleItem('${item}')" id="item-${item}" class="chip ${active ? 'active' : ''}">${item.toUpperCase()}</div>`;
             });
             renderEjercicios();
         }
 
-        function toggleEquip() {
-            const content = document.getElementById('equip-content');
-            const arrow = document.getElementById('arrow');
-            content.classList.toggle('dropdown-open');
-            arrow.style.transform = content.classList.contains('dropdown-open') ? 'rotate(180deg)' : 'rotate(0deg)';
-        }
-
         function toggleItem(item) {
-            const el = document.getElementById('item-' + item);
-            const newState = !el.classList.contains('active');
-            el.classList.toggle('active');
-            localStorage.setItem('equip_' + item, newState); // Guarda en iPhone
-            renderEjercicios();
+            const active = localStorage.getItem('equip_' + item) === 'true';
+            localStorage.setItem('equip_' + item, !active);
+            init();
         }
 
-        // LÓGICA DE EJERCICIOS (Magia: Solo muestra lo que tienes)
-        const dbEjercicios = [
-            {n: "Press de Banca", eq: ["Multiestación", "Barra olímpica", "Mancuernas"]},
-            {n: "Polea Alta", eq: ["Multiestación", "Poleas"]},
-            {n: "Rodillo/Cardio", eq: ["Rodillo de rulos", "Bici de carretera", "Bici de montaña"]},
-            {n: "Sentadilla Pro", eq: ["Mancuernas", "Kettlebell", "Barra Z"]},
-            {n: "Fondos", eq: ["Silla", "Paralelas", "Anillas"]},
-            {n: "Remo", eq: ["Banda elástica", "Gomas elásticas", "Multiestación"]},
-            {n: "Running", eq: ["Cinta de correr"]}
-        ];
+        function toggleEquip() {
+            const c = document.getElementById('equip-content');
+            const a = document.getElementById('arrow');
+            c.classList.toggle('dropdown-open');
+            a.style.transform = c.classList.contains('dropdown-open') ? 'rotate(180deg)' : 'rotate(0deg)';
+        }
 
         function renderEjercicios() {
             const cont = document.getElementById('contenedor-ejercicios');
             cont.innerHTML = '';
-            
             dbEjercicios.forEach((ej, i) => {
-                // Comprobar si el usuario tiene al menos una de las herramientas necesarias
-                const tieneHerramienta = ej.eq.some(h => localStorage.getItem('equip_' + h) === 'true');
-                
-                if (tieneHerramienta) {
+                const tiene = localStorage.getItem('equip_' + ej.eq) === 'true';
+                if (tiene) {
+                    const savedKg = localStorage.getItem(`kg-${ej.n}`) || '';
                     cont.innerHTML += `
-                        <div class="apple-card py-4 bg-slate-900/40 border-l-4 border-blue-500">
-                            <div class="flex justify-between items-center">
-                                <div><h3 class="font-bold text-sm uppercase">${ej.n}</h3><p class="text-[9px] text-blue-400 italic">Usando: ${ej.eq.find(h => localStorage.getItem('equip_'+h)==='true')}</p></div>
-                                <div class="flex gap-2">
-                                    <input type="number" id="kg-${i}" class="bg-slate-800 text-white rounded-lg w-12 text-center text-xs p-2 border border-slate-700" placeholder="Kg">
-                                    <button class="bg-green-600/20 text-green-400 px-3 rounded-lg font-bold text-[10px]">OK</button>
-                                </div>
+                        <div class="apple-card py-4 bg-slate-900/40 border-l-4 border-blue-500 flex justify-between items-center">
+                            <div class="flex items-center gap-3">
+                                <div><h3 class="font-bold text-xs uppercase">${ej.n}</h3><p class="text-[8px] text-blue-400 italic">${ej.eq}</p></div>
+                                <button onclick="abrirAyuda('${ej.n}')" class="bg-gray-700 w-6 h-6 rounded-full text-xs font-black text-blue-400 border border-gray-600">?</button>
+                            </div>
+                            <div class="flex gap-2">
+                                <input type="number" value="${savedKg}" onchange="localStorage.setItem('kg-${ej.n}', this.value)" class="bg-slate-800 text-white rounded-lg w-12 text-center text-xs p-2 border border-slate-700" placeholder="0">
+                                <button onclick="this.classList.toggle('text-green-400')" class="bg-green-600/10 px-3 rounded-lg font-bold text-[10px]">OK</button>
                             </div>
                         </div>`;
                 }
             });
-            if(cont.innerHTML === '') cont.innerHTML = '<p class="text-center text-gray-500 text-[10px] mt-4">Configura tu equipamiento para ver ejercicios disponibles.</p>';
         }
 
-        // --- FUNCIONES DE CONTROL (CRONO Y POLAR) ---
+        // FUNCIONES DE AYUDA (MODAL)
+        function abrirAyuda(nombre) {
+            const data = ayudaEjercicios[nombre];
+            if (!data) { alert("Este ejercicio personalizado no tiene guía visual. ¡Concéntrate en la técnica!"); return; }
+            
+            document.getElementById('help-title').innerText = nombre;
+            document.getElementById('help-gif-img').src = data.gif;
+            
+            const textCont = document.getElementById('help-text');
+            textCont.innerHTML = '<p class="font-bold mb-1">Técnica:</p>';
+            data.puntos.forEach(p => {
+                textCont.innerHTML += `<p>• ${p}</p>`;
+            });
+            
+            document.getElementById('help-modal').classList.add('active');
+        }
+
+        function cerrarAyuda() {
+            document.getElementById('help-modal').classList.remove('active');
+            // Detener el GIF (opcional, para ahorrar datos/batería)
+            setTimeout(() => { document.getElementById('help-gif-img').src = ""; }, 300);
+        }
+
+        function nuevoEjercicio() {
+            const nombre = prompt("Nombre del ejercicio:");
+            if (!nombre) return;
+            const herramienta = prompt("¿Qué herramienta usa? (Escríbela igual que en la lista):");
+            if (!catalogo.includes(herramienta)) { alert("Esa herramienta no existe en la lista."); return; }
+            dbEjercicios.push({n: nombre, eq: herramienta});
+            localStorage.setItem('mis_ejercicios', JSON.stringify(dbEjercicios));
+            renderEjercicios();
+        }
+
+        // LÓGICA CRONÓMETRO Y POLAR (Igual que anterior)
         async function conectarPolar() {
             try {
                 const device = await navigator.bluetooth.requestDevice({ filters: [{ services: ['heart_rate'] }] });
@@ -139,10 +188,9 @@
                 char.startNotifications();
                 char.addEventListener('characteristicvaluechanged', (e) => {
                     document.getElementById('bpm-val').innerText = e.target.value.getUint8(1);
-                    document.getElementById('heart-box').classList.add('anim-pulse');
                 });
-                document.getElementById('btn-sensor').innerText = "POLAR CONECTADO ✅";
-            } catch (e) { alert("Error de conexión."); }
+                document.getElementById('btn-sensor').innerText = "CONECTADO";
+            } catch (e) { alert("Error de Bluetooth."); }
         }
 
         function toggleFase() {
@@ -150,12 +198,12 @@
             document.getElementById('btn-pausa').disabled = false;
             document.getElementById('btn-pausa').classList.remove('opacity-30');
             if (estado !== 'serie') {
-                estado = 'serie'; segundos = 0; btn.innerText = "FINALIZAR SERIE";
-                card.className = "apple-card text-center modo-serie transition-all duration-500";
+                estado = 'serie'; segundos = 0; btn.innerText = "TERMINAR SERIE";
+                card.className = "apple-card text-center modo-serie transition-all";
                 clearInterval(crono); crono = setInterval(() => { segundos++; actDisplay(); }, 1000);
             } else {
                 estado = 'descanso'; segundos = 90; btn.innerText = "SALTAR DESCANSO";
-                card.className = "apple-card text-center modo-descanso transition-all duration-500";
+                card.className = "apple-card text-center modo-descanso transition-all";
                 clearInterval(crono); crono = setInterval(() => { segundos--; actDisplay(); if(segundos<=0) resetCrono(); }, 1000);
             }
         }
@@ -177,7 +225,7 @@
 
         function resetCrono() {
             clearInterval(crono); estado = 'parado'; segundos = 0; actDisplay();
-            document.getElementById('timer-card').className = "apple-card text-center transition-all duration-500";
+            document.getElementById('timer-card').className = "apple-card text-center transition-all";
             document.getElementById('btn-principal').innerText = "INICIAR SERIE";
         }
 
