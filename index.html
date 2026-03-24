@@ -1,125 +1,126 @@
-p<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Entrenador Personal Pro - V16</title>
+    <title>Apple Entreno - V17</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        body { background-color: #020617; color: white; font-family: -apple-system, sans-serif; -webkit-tap-highlight-color: transparent; overflow-x: hidden; }
-        .apple-card { background: #1e293b; border-radius: 24px; padding: 20px; margin-bottom: 12px; border: 1px solid #334155; }
-        .modo-serie { background: #450a0a !important; border-color: #ef4444; }
-        .modo-descanso { background: #064e3b !important; border-color: #10b981; }
-        .dropdown-content { max-height: 0; overflow: hidden; transition: max-height 0.4s ease; }
-        .dropdown-open { max-height: 1000px; }
-        .chip { padding: 8px; border-radius: 12px; font-size: 10px; font-weight: bold; background: #334155; border: 1px solid transparent; text-align: center; cursor: pointer; }
-        .chip.active { background: #2563eb; border-color: #60a5fa; color: white; }
+        body { background-color: #000; color: #fff; font-family: -apple-system, BlinkMacSystemFont, sans-serif; -webkit-tap-highlight-color: transparent; }
         
-        /* Modal de Ayuda Técnica */
-        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); display: none; justify-content: center; align-items: center; z-index: 1000; opacity: 0; transition: opacity 0.3s; }
-        .modal-overlay.active { display: flex; opacity: 1; }
-        .modal-content { background: #1e293b; width: 90%; max-width: 350px; border-radius: 24px; padding: 25px; border: 1px solid #475569; transform: scale(0.9); transition: transform 0.3s; }
-        .modal-overlay.active .modal-content { transform: scale(1); }
-        .help-gif { width: 100%; border-radius: 15px; margin-bottom: 15px; border: 2px solid #334155; }
+        /* Estilo Apple Fitness */
+        .apple-card { background: #1c1c1e; border-radius: 20px; padding: 20px; margin-bottom: 12px; border: 1px solid #2c2c2e; }
+        .text-apple-green { color: #30d158; }
+        .bg-apple-green { background-color: #30d158; }
+        .text-apple-yellow { color: #ffd60a; }
+        
+        /* Dropdown Herramientas */
+        .drawer { max-height: 0; overflow: hidden; transition: max-height 0.4s ease-out; }
+        .drawer-open { max-height: 500px; }
+        
+        /* Chips de Equipamiento */
+        .chip { padding: 10px; border-radius: 12px; font-size: 10px; font-weight: 800; background: #2c2c2e; text-align: center; border: 1px solid transparent; }
+        .chip.active { background: #30d158; color: #000; }
+
+        /* Modal Técnica */
+        .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.9); display: none; justify-content: center; align-items: center; z-index: 100; }
+        .modal-overlay.active { display: flex; }
+        .modal-content { background: #1c1c1e; width: 90%; border-radius: 24px; padding: 20px; border: 1px solid #334155; }
+        
+        /* Cronómetro Estilo Watch */
+        .timer-font { font-variant-numeric: tabular-nums; font-weight: 200; letter-spacing: -2px; }
     </style>
 </head>
-<body class="p-4 pb-32">
+<body class="p-4 pb-28">
 
     <div id="help-modal" class="modal-overlay" onclick="cerrarAyuda()">
-        <div class="modal-content text-center" onclick="event.stopPropagation()">
-            <h3 id="help-title" class="text-xl font-black uppercase mb-3">Técnica</h3>
-            <img id="help-gif-img" src="" alt="Demostración" class="help-gif">
-            <div id="help-text" class="text-xs text-left text-gray-300 space-y-2 bg-slate-900/50 p-4 rounded-xl border border-slate-700"></div>
-            <button onclick="cerrarAyuda()" class="mt-5 w-full bg-blue-600 py-3 rounded-xl text-xs font-bold uppercase tracking-widest text-white">Cerrar</button>
+        <div class="modal-content" onclick="event.stopPropagation()">
+            <h3 id="help-title" class="text-xl font-bold mb-4 text-apple-green">Técnica</h3>
+            <img id="help-gif-img" src="" class="w-full rounded-xl mb-4 border border-white/10">
+            <div id="help-text" class="text-sm text-gray-400 space-y-2 bg-black/40 p-4 rounded-xl"></div>
+            <button onclick="cerrarAyuda()" class="mt-6 w-full bg-white text-black py-4 rounded-xl font-bold uppercase text-xs">Cerrar</button>
         </div>
     </div>
 
-    <div class="apple-card border-t-4 border-pink-500">
-        <p class="text-[10px] font-black uppercase text-pink-400 mb-4 tracking-widest">Sincronización Polar H10 / Health</p>
-        <div class="grid grid-cols-3 gap-3 mb-5">
-            <div class="bg-slate-900/50 p-3 rounded-2xl text-center border border-slate-700">
-                <p class="text-[8px] text-gray-400 uppercase font-bold">BPM Med.</p>
-                <p id="bpm-val" class="text-xl font-black">--</p>
+    <div class="apple-card border-l-4 border-red-500">
+        <div class="flex justify-between items-start mb-4">
+            <div>
+                <p class="text-[10px] font-black text-gray-500 uppercase tracking-widest">Frecuencia Cardíaca</p>
+                <div class="flex items-baseline gap-1">
+                    <span id="bpm-val" class="text-5xl font-bold tracking-tighter">--</span>
+                    <span class="text-red-500 font-bold text-sm">BPM</span>
+                </div>
             </div>
-            <div class="bg-slate-900/50 p-3 rounded-2xl text-center border border-slate-700">
-                <p class="text-[8px] text-gray-400 uppercase font-bold">Kcal Est.</p>
-                <p id="kcal-val" class="text-xl font-black">0</p>
+            <button onclick="conectarPolar()" class="w-12 h-12 rounded-full bg-red-500/10 flex items-center justify-center text-xl">❤️</button>
+        </div>
+        <div class="grid grid-cols-2 gap-4 pt-4 border-t border-white/5">
+            <div>
+                <p class="text-[10px] text-gray-500 font-bold uppercase">Calorías Activas</p>
+                <p class="text-2xl font-bold"><span id="kcal-val">0</span> <span class="text-xs text-orange-500">KCAL</span></p>
             </div>
-            <div class="bg-slate-900/50 p-3 rounded-2xl text-center border border-slate-700">
-                <p class="text-[8px] text-gray-400 uppercase font-bold">Tiempo</p>
-                <p id="total-session-time" class="text-xl font-black">0m</p>
+            <div>
+                <p class="text-[10px] text-gray-500 font-bold uppercase">Total Tiempo</p>
+                <p id="total-session-time" class="text-2xl font-bold">0:00</p>
             </div>
         </div>
-        <button onclick="conectarPolar()" id="btn-sensor" class="w-full bg-pink-600/20 text-pink-400 py-3 rounded-xl border border-pink-500/30 text-xs font-black uppercase">
-            Vincular Banda Polar
-        </button>
     </div>
 
     <div class="apple-card">
-        <button onclick="document.getElementById('equip-content').classList.toggle('dropdown-open')" class="w-full flex justify-between items-center py-1">
-            <span class="text-[10px] font-black uppercase text-blue-400">Mi Equipamiento en Casa</span>
-            <span class="text-xs">▼</span>
+        <button onclick="document.getElementById('equip-drawer').classList.toggle('drawer-open')" class="w-full flex justify-between items-center">
+            <span class="text-xs font-bold uppercase tracking-tight">Equipamiento en casa</span>
+            <span class="text-apple-green text-xs font-bold">Ajustar</span>
         </button>
-        <div id="equip-content" class="dropdown-content mt-4">
-            <div id="lista-equip" class="grid grid-cols-2 gap-2">
-                </div>
+        <div id="equip-drawer" class="drawer">
+            <div id="lista-equip" class="grid grid-cols-2 gap-2 mt-4"></div>
         </div>
     </div>
 
-    <div id="timer-card" class="apple-card text-center transition-all duration-500">
-        <div id="display" class="text-6xl font-mono font-bold mb-4 tracking-tighter">00:00</div>
-        <div class="flex gap-2">
-            <button id="btn-principal" onclick="toggleFase()" class="flex-1 bg-blue-600 py-3 rounded-xl font-black text-xs uppercase tracking-widest">Iniciar</button>
-            <button id="btn-pausa" onclick="pausar()" class="w-14 bg-slate-700 py-3 rounded-xl font-bold opacity-30" disabled>||</button>
+    <div id="timer-bg" class="apple-card text-center transition-colors duration-500">
+        <p id="timer-status" class="text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-2">Listo para empezar</p>
+        <div id="display" class="text-7xl timer-font mb-8">00:00</div>
+        
+        <div class="flex gap-4">
+            <button id="btn-pausa" onclick="pausar()" class="w-16 h-16 rounded-full bg-apple-yellow/10 flex items-center justify-center opacity-20" disabled>
+                <span id="pause-icon" class="text-apple-yellow text-xl">||</span>
+            </button>
+            <button id="btn-principal" onclick="toggleEntreno()" class="flex-1 bg-apple-green text-black rounded-2xl font-black text-sm uppercase tracking-widest">Iniciar</button>
         </div>
     </div>
 
-    <div class="flex justify-between items-center px-2 mb-3">
-        <h2 class="text-[11px] font-black uppercase text-gray-500 tracking-widest">Sugerencia del Entrenador</h2>
+    <div class="px-2 mb-3">
+        <h2 class="text-[10px] font-black text-gray-500 uppercase tracking-widest">Sugerencia del Entrenador</h2>
     </div>
-    
-    <div id="contenedor-ejercicios"></div>
+    <div id="contenedor-ejercicios" class="space-y-3"></div>
 
     <script>
-        let seg=0,crono,estado='parado',paused=false,bpmArray=[],kcal=0;
+        let seg=0, crono, running=false, paused=false, kcal=0;
         const catalogo = ["Multiestación", "Rodillo de rulos", "Cinta correr", "Mancuernas", "Silla", "Esterilla", "Barra de Pecho"].sort();
         
-        // BASE DE DATOS TÉCNICA (GIFS Y TEXTO)
         const ayudaTécnica = {
             "Press de Banca": {
-                gif: "https://media.giphy.com/media/l0HlCqV3E6o6k9uYw/giphy.gif",
-                puntos: ["Pies bien apoyados.", "Baja controlado hasta el pecho.", "Empuja explosivo sin bloquear codos."]
+                gif: "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExNHJidm96eWJueW56bm56bm56bm56bm56bm56bm56bm56bm56JmVwPXYxX2ludGVybmFsX2dpZl9ieV9pZCZjdD1n/l0HlCqV3E6o6k9uYw/giphy.gif",
+                puntos: ["Apoya pies con fuerza.", "Baja la barra al esternón.", "No bloquees los codos arriba."]
             },
             "Polea Alta": {
                 gif: "https://media.giphy.com/media/l0HlJgY6w7A8O38Gg/giphy.gif",
-                puntos: ["Pecho arriba, espalda recta.", "Codos hacia abajo y atrás.", "Contrae la espalda al final."]
+                puntos: ["Tronco ligeramente hacia atrás.", "Lleva la barra a la parte superior del pecho.", "Aprieta escápulas."]
             }
         };
 
-        // LÓGICA DE PROGRESIÓN (MEMORIA INTERACTIVA)
-        function getPlanProgresivo() {
-            // Comprobamos qué se hizo la última vez
-            const ultimaVez = localStorage.getItem('ultimo_entreno_tipo');
-            const pressBancaKg = localStorage.getItem('kg-Press de Banca') || 0;
-
-            let plan = [];
-            // Si ayer hizo Press Banca, hoy toca cambiar. Si no, sugerimos Press Banca.
-            if (ultimaVez === 'fuerza-pecho') {
-                plan = [
-                    {n: "Rodillo", eq: "Rodillo de rulos", meta: "30 min constantes"},
-                    {n: "Polea Alta", eq: "Multiestación", meta: "3x12 (Espalda)"}
-                ];
-            } else {
-                // Progresión interactiva para Press Banca
-                let series = 2, reps = 5;
-                if(pressBancaKg > 0) { series = 3; reps = 10; } // Si ya hay peso registrado, subimos volumen
-
-                plan = [
-                    {n: "Press de Banca", eq: "Barra de Pecho", meta: `${series}x${reps} (Pecho)`},
-                    {n: "Cinta correr", eq: "Cinta correr", meta: "15 min (Cardio)"}
+        function getPlan() {
+            const ultimaVez = localStorage.getItem('ultimo_tipo');
+            const haHechoPesos = localStorage.getItem('kg-Press de Banca');
+            
+            if (ultimaVez === 'fuerza') {
+                return [
+                    {n: "Rodillo", eq: "Rodillo de rulos", m: "35 min a 135 BPM"},
+                    {n: "Polea Alta", eq: "Multiestación", m: "3x12 - Enfoque Espalda"}
                 ];
             }
-            return plan;
+            return [
+                {n: "Press de Banca", eq: "Barra de Pecho", m: haHechoPesos ? "3x10 (Aumento volumen)" : "2x5 (Toma de contacto)"},
+                {n: "Cinta correr", eq: "Cinta correr", m: "12 min HIIT"}
+            ];
         }
 
         function init() {
@@ -127,9 +128,9 @@ p<!DOCTYPE html>
             lista.innerHTML = '';
             catalogo.forEach(item => {
                 const act = localStorage.getItem('e_'+item) === 'true';
-                lista.innerHTML += `<div onclick="toggleEq('${item}')" id="item-${item}" class="chip ${act?'active':''}">${item.toUpperCase()}</div>`;
+                lista.innerHTML += `<div onclick="toggleEq('${item}')" class="chip ${act?'active':''}">${item.toUpperCase()}</div>`;
             });
-            renderEjercicios();
+            renderCoach();
         }
 
         function toggleEq(item) {
@@ -137,55 +138,46 @@ p<!DOCTYPE html>
             init();
         }
 
-        function renderEjercicios() {
+        function renderCoach() {
             const cont = document.getElementById('contenedor-ejercicios');
             cont.innerHTML = '';
-            const plan = getPlanProgresivo();
-            
-            plan.forEach((ej, i) => {
-                const tiene = localStorage.getItem('e_'+ej.eq) === 'true';
-                if (tiene) {
+            getPlan().forEach((ej, i) => {
+                if (localStorage.getItem('e_'+ej.eq) === 'true') {
                     cont.innerHTML += `
-                        <div class="apple-card py-4 border-l-4 border-blue-500 flex justify-between items-center">
+                        <div class="apple-card border-l-2 border-apple-green flex justify-between items-center py-5">
                             <div>
                                 <div class="flex items-center gap-2">
-                                    <h3 class="font-bold text-xs uppercase">${ej.n}</h3>
-                                    ${ayudaTécnica[ej.n] ? `<button onclick="abrirAyuda('${ej.n}')" class="w-5 h-5 bg-slate-700 rounded-full text-[10px] font-bold text-blue-400">?</button>` : ''}
+                                    <h3 class="font-black text-xs uppercase italic">${ej.n}</h3>
+                                    ${ayudaTécnica[ej.n] ? `<button onclick="abrirAyuda('${ej.n}')" class="w-5 h-5 bg-white/10 rounded-full text-[10px] text-apple-green font-bold italic">i</button>` : ''}
                                 </div>
-                                <p class="text-[9px] text-blue-400 font-bold">${ej.meta}</p>
+                                <p class="text-[10px] text-gray-500 font-bold uppercase mt-1 tracking-tighter">${ej.m}</p>
                             </div>
                             <div class="flex gap-2">
-                                <input type="number" id="kg-${i}" class="bg-slate-800 text-white rounded-lg w-12 text-center text-xs p-2 border border-slate-700" placeholder="Kg">
-                                <button onclick="finalizarEjercicio('${ej.n}', ${i})" class="bg-green-600 px-3 rounded-lg font-bold text-[10px]">OK</button>
+                                <input type="number" id="kg-${i}" class="bg-black border border-white/10 rounded-lg w-12 text-center text-xs p-2 font-bold" placeholder="Kg">
+                                <button onclick="save('${ej.n}', ${i})" class="bg-white text-black px-4 rounded-xl font-black text-[10px]">OK</button>
                             </div>
                         </div>`;
                 }
             });
         }
 
-        // MEMORIA: Guardar qué se hizo para mañana cambiar
-        function finalizarEjercicio(nombre, idx) {
+        function save(nombre, idx) {
             const kg = document.getElementById(`kg-${idx}`).value;
             localStorage.setItem(`kg-${nombre}`, kg);
-            if(nombre === "Press de Banca") localStorage.setItem('ultimo_entreno_tipo', 'fuerza-pecho');
-            else if(nombre === "Rodillo") localStorage.setItem('ultimo_entreno_tipo', 'cardio');
-            
-            alert(`Buen trabajo en ${nombre}. Mañana adaptaremos el entreno.`);
-            renderEjercicios(); // Recarga para mostrar progresión visual
+            localStorage.setItem('ultimo_tipo', nombre === "Press de Banca" ? "fuerza" : "cardio");
+            alert("Ejercicio guardado. Mañana el coach te pedirá más.");
+            renderCoach();
         }
 
-        function abrirAyuda(nombre) {
-            const data = ayudaTécnica[nombre];
-            document.getElementById('help-title').innerText = nombre;
-            document.getElementById('help-gif-img').src = data.gif;
-            const text = document.getElementById('help-text');
-            text.innerHTML = '<p class="font-bold mb-1">Técnica:</p>';
-            data.puntos.forEach(p => text.innerHTML += `<p>• ${p}</p>`);
+        function abrirAyuda(n) {
+            const d = ayudaTécnica[n];
+            document.getElementById('help-title').innerText = n;
+            document.getElementById('help-gif-img').src = d.gif;
+            document.getElementById('help-text').innerHTML = d.puntos.map(p => `• ${p}`).join('<br>');
             document.getElementById('help-modal').classList.add('active');
         }
         function cerrarAyuda() { document.getElementById('help-modal').classList.remove('active'); }
 
-        // BLUETOOTH POLAR REAL
         async function conectarPolar() {
             try {
                 const device = await navigator.bluetooth.requestDevice({ filters: [{ services: ['heart_rate'] }] });
@@ -194,45 +186,41 @@ p<!DOCTYPE html>
                 const char = await service.getCharacteristic('heart_rate_measurement');
                 char.startNotifications();
                 char.addEventListener('characteristicvaluechanged', (e) => {
-                    const bpm = e.target.value.getUint8(1);
-                    document.getElementById('bpm-val').innerText = bpm;
-                    // Lógica para Kcal (estimación por BPM)
-                    kcal += (bpm * 0.015);
+                    const v = e.target.value.getUint8(1);
+                    document.getElementById('bpm-val').innerText = v;
+                    kcal += (v * 0.012);
                     document.getElementById('kcal-val').innerText = Math.floor(kcal);
                 });
-                document.getElementById('btn-sensor').innerText = "CONECTADO ✅";
-                document.getElementById('btn-sensor').className = "w-full bg-green-600/20 text-green-400 py-3 rounded-xl border border-green-500/30 text-xs font-black uppercase";
-            } catch (e) { alert("Error de conexión. Activa Bluetooth."); }
+            } catch (e) { console.log(e); }
         }
 
-        function toggleFase() {
+        function toggleEntreno() {
             const btn = document.getElementById('btn-principal'), pBtn = document.getElementById('btn-pausa');
-            if (estado !== 'serie') {
-                estado = 'serie'; seg = 0; kcal=0;
-                btn.innerText = "FINALIZAR";
-                document.getElementById('timer-card').classList.add('modo-serie');
-                pBtn.disabled = false; pBtn.classList.remove('opacity-30');
-                clearInterval(crono); crono = setInterval(() => { seg++; actDisplay(); }, 1000);
+            if (!running) {
+                running = true; btn.innerText = "FINALIZAR"; btn.className = "flex-1 bg-red-600 text-white rounded-2xl font-black text-sm uppercase tracking-widest";
+                pBtn.disabled = false; pBtn.classList.remove('opacity-20');
+                crono = setInterval(() => { seg++; updateDisp(); }, 1000);
             } else {
-                clearInterval(crono); estado = 'parado'; 
-                btn.innerText = "INICIAR";
-                document.getElementById('timer-card').classList.remove('modo-serie');
-                pBtn.disabled = true; pBtn.classList.add('opacity-30');
+                running = false; clearInterval(crono); 
+                btn.innerText = "INICIAR"; btn.className = "flex-1 bg-apple-green text-black rounded-2xl font-black text-sm uppercase tracking-widest";
+                pBtn.disabled = true; pBtn.classList.add('opacity-20');
             }
         }
 
-        function actDisplay() {
-            let m=Math.floor(seg/60),s=seg%60;
-            document.getElementById('display').innerText = `${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`;
+        function updateDisp() {
+            let m=Math.floor(seg/60), s=seg%60;
+            const t = `${m}:${s.toString().padStart(2,'0')}`;
+            document.getElementById('display').innerText = t;
+            document.getElementById('total-session-time').innerText = t;
         }
 
         function pausar() {
-            const pBtn = document.getElementById('btn-pausa');
-            if (!paused) { paused=true; clearInterval(crono); pBtn.innerText = "▶"; pBtn.classList.add('bg-yellow-600'); }
-            else { paused=false; crono = setInterval(() => { seg++; actDisplay(); }, 1000); pBtn.innerText = "||"; pBtn.classList.remove('bg-yellow-600'); }
+            const icon = document.getElementById('pause-icon');
+            if (!paused) { paused=true; clearInterval(crono); icon.innerText = "▶"; icon.classList.replace('text-apple-yellow', 'text-white'); }
+            else { paused=false; crono = setInterval(() => { seg++; updateDisp(); }, 1000); icon.innerText = "||"; icon.classList.replace('text-white', 'text-apple-yellow'); }
         }
 
-        init(); actDisplay();
+        init();
     </script>
 </body>
 </html>
