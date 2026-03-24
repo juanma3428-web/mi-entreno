@@ -3,141 +3,131 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Asistente Sport Ultra</title>
+    <title>Sport Ultra Pro + Health</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        body { background-color: #0f172a; color: white; font-family: -apple-system, system-ui, sans-serif; }
-        .apple-card { background: #1e293b; border-radius: 18px; padding: 18px; margin-bottom: 12px; }
-        .input-dark { background: #334155; border: none; border-radius: 8px; color: white; padding: 5px 10px; width: 60px; text-align: center; }
-        .btn-tool { background: #334155; padding: 8px; border-radius: 10px; font-size: 0.75rem; border: 1px solid transparent; }
-        .btn-active { border-color: #3b82f6; background: #1e3a8a; }
-        .timer-active { color: #f87171; font-weight: bold; animation: pulse 1s infinite; }
-        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
+        body { background-color: #020617; color: white; font-family: -apple-system, sans-serif; }
+        .apple-card { background: #1e293b; border-radius: 24px; padding: 20px; margin-bottom: 12px; }
+        .modo-serie { background: #7f1d1d; border: 2px solid #ef4444; }
+        .modo-descanso { background: #064e3b; border: 2px solid #10b981; }
+        .bpm-display { font-size: 3rem; font-weight: 800; font-family: monospace; }
+        .stat-box { background: #0f172a; padding: 10px; border-radius: 15px; text-align: center; }
     </style>
 </head>
-<body class="p-4 pb-20">
+<body class="p-5 pb-28">
 
-    <div class="flex justify-between items-center mb-4">
-        <div>
-            <h1 class="text-xl font-bold">Entrenamiento Pro</h1>
-            <p id="fecha-display" class="text-blue-400 text-xs font-mono"></p>
-        </div>
-        <div class="text-right">
-            <span class="text-[10px] text-gray-400 block uppercase">Watch Ultra 3</span>
-            <span class="text-green-400 font-bold">Conectado</span>
-        </div>
-    </div>
-
-    <div class="apple-card">
-        <label class="text-[10px] font-bold text-gray-400 uppercase mb-3 block text-center italic">Ubicación Actual</label>
-        <div class="grid grid-cols-2 gap-3">
-            <button onclick="setModo('casa')" id="btn-casa" class="btn-tool btn-active">EN CASA (Gimnasio)</button>
-            <button onclick="setModo('fuera')" id="btn-fuera" class="btn-tool">FUERA DE CASA</button>
-        </div>
-    </div>
-
-    <div id="panel-herramientas" class="apple-card hidden border border-blue-500/30">
-        <h3 class="text-xs font-bold mb-3">SELECCIONA HERRAMIENTAS DISPONIBLES:</h3>
+    <div id="health-summary" class="apple-card border-t-4 border-pink-500">
+        <h2 class="text-[10px] font-black uppercase text-pink-400 mb-3 tracking-widest">Sincronización Apple Health</h2>
         <div class="grid grid-cols-3 gap-2">
-            <button onclick="toggleTool(this)" class="btn-tool">Silla</button>
-            <button onclick="toggleTool(this)" class="btn-tool">Cinta Elástica</button>
-            <button onclick="toggleTool(this)" class="btn-tool">Peso Corporal</button>
-            <button onclick="toggleTool(this)" class="btn-tool">Bici Prestada</button>
-            <button onclick="toggleTool(this)" class="btn-tool">Mancuernas</button>
+            <div class="stat-box">
+                <p class="text-[9px] text-gray-400 uppercase">BPM Med.</p>
+                <p id="avg-bpm" class="text-lg font-bold">--</p>
+            </div>
+            <div class="stat-box">
+                <p class="text-[9px] text-gray-400 uppercase">Kcal</p>
+                <p id="total-kcal" class="text-lg font-bold">--</p>
+            </div>
+            <div class="stat-box">
+                <p class="text-[9px] text-gray-400 uppercase">Tiempo</p>
+                <p id="total-time" class="text-lg font-bold">--</p>
+            </div>
+        </div>
+        <button onclick="sincronizarSalud()" class="w-full mt-3 py-2 bg-pink-600/20 text-pink-400 text-[10px] font-bold rounded-lg border border-pink-500/30">ACTUALIZAR DATOS DESDE WATCH</button>
+    </div>
+
+    <div id="timer-card" class="apple-card text-center transition-all duration-500">
+        <div id="display" class="text-6xl font-mono font-bold mb-4 tracking-tighter">00:00</div>
+        <div class="grid grid-cols-2 gap-3">
+            <button id="btn-principal" onclick="toggleFase()" class="bg-blue-600 py-3 rounded-xl font-bold text-xs uppercase">Iniciar Serie</button>
+            <button id="btn-pausa" onclick="pausar()" class="bg-slate-800 py-3 rounded-xl font-bold text-xs uppercase opacity-30" disabled>Pausa</button>
         </div>
     </div>
 
-    <div class="apple-card text-center bg-slate-800/50">
-        <p class="text-[10px] text-gray-400 uppercase">Temporizador de Descanso</p>
-        <div id="timer-display" class="text-3xl font-mono py-1">01:30</div>
-        <button onclick="startTimer()" class="text-xs bg-blue-600 px-4 py-1 rounded-full mt-1">Iniciar Descanso</button>
-    </div>
-
-    <div id="lista-ejercicios">
-        </div>
+    <div id="contenedor-ejercicios"></div>
 
     <script>
-        let modoActual = 'casa';
-        let herramientasFuera = [];
+        let segundos = 0, crono, estado = 'parado', modo = 'casa';
 
-        const rutinas = {
-            casa: [
-                { nombre: "Press de Banca", equipo: "Barra de Pecho", reps: "3 x 10", ayuda: "Baja la barra al pecho suavemente. Codos a 45 grados." },
-                { nombre: "Polea Alta Espalda", equipo: "Multiestación", reps: "3 x 12", ayuda: "Pecho fuera, lleva la barra a la parte alta del pecho." }
-            ],
-            fuera: [
-                { nombre: "Flexiones de Brazos", equipo: "Peso Corporal", reps: "3 x Fallo técnico", ayuda: "Mantén el cuerpo como una tabla. Si es difícil, apoya rodillas." },
-                { nombre: "Step-up (Subida)", equipo: "Silla", reps: "3 x 15 por pierna", ayuda: "Usa la fuerza de la pierna de arriba, no te impulses con la de abajo." }
-            ]
-        };
-
-        function setModo(modo) {
-            modoActual = modo;
-            document.getElementById('btn-casa').classList.toggle('btn-active', modo === 'casa');
-            document.getElementById('btn-fuera').classList.toggle('btn-active', modo === 'fuera');
-            document.getElementById('panel-herramientas').classList.toggle('hidden', modo === 'casa');
-            renderEjercicios();
+        // FUNCIÓN DE CONEXIÓN CON APPLE HEALTH
+        async function sincronizarSalud() {
+            // Nota: En una PWA, Safari requiere que el usuario haya iniciado un entreno en el Watch.
+            // Esta función simula la llamada a la API de HealthKit.
+            alert("Solicitando acceso a Apple Health...");
+            
+            // Simulación de datos que recibiremos del Apple Watch Ultra 3:
+            document.getElementById('avg-bpm').innerText = "124";
+            document.getElementById('total-kcal').innerText = "342";
+            document.getElementById('total-time').innerText = "42m";
+            
+            // Guardar en el historial de la App
+            localStorage.setItem('ultimo_entreno', JSON.stringify({
+                bpm: 124, kcal: 342, fecha: new Date().toLocaleDateString()
+            }));
         }
 
-        function toggleTool(btn) {
-            btn.classList.toggle('btn-active');
-            renderEjercicios();
+        function toggleFase() {
+            const btn = document.getElementById('btn-principal'), card = document.getElementById('timer-card'), btnP = document.getElementById('btn-pausa');
+            btnP.disabled = false; btnP.classList.remove('opacity-30');
+
+            if (estado !== 'serie') {
+                estado = 'serie'; segundos = 0;
+                card.className = "apple-card text-center modo-serie";
+                btn.innerText = "FINALIZAR SERIE";
+                clearInterval(crono);
+                crono = setInterval(() => { segundos++; actDisplay(); }, 1000);
+            } else {
+                estado = 'descanso'; segundos = 90;
+                card.className = "apple-card text-center modo-descanso";
+                btn.innerText = "SALTAR DESCANSO";
+                clearInterval(crono);
+                crono = setInterval(() => { 
+                    segundos--; actDisplay(); 
+                    if(segundos <= 0) { resetCrono(); }
+                }, 1000);
+            }
         }
 
-        function renderEjercicios() {
-            const container = document.getElementById('lista-ejercicios');
-            container.innerHTML = '';
-            const lista = rutinas[modoActual];
+        function actDisplay() {
+            let m = Math.floor(segundos / 60), s = segundos % 60;
+            document.getElementById('display').innerText = `${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`;
+        }
 
-            lista.forEach((ej, index) => {
-                container.innerHTML += `
-                    <div class="apple-card">
-                        <div class="flex justify-between items-start mb-3">
-                            <div>
-                                <h4 class="font-bold text-sm">${ej.nombre}</h4>
-                                <p class="text-[10px] text-blue-400 italic">${ej.equipo}</p>
-                            </div>
-                            <button onclick="alert('${ej.ayuda}')" class="bg-slate-700 w-8 h-8 rounded-full text-xs italic">?</button>
+        function pausar() {
+            if (estado === 'pausa') {
+                estado = 'serie'; crono = setInterval(() => { segundos++; actDisplay(); }, 1000);
+                document.getElementById('btn-pausa').innerText = "PAUSA";
+            } else {
+                clearInterval(crono); estado = 'pausa';
+                document.getElementById('btn-pausa').innerText = "REANUDAR";
+            }
+        }
+
+        function resetCrono() {
+            clearInterval(crono); estado = 'parado'; segundos = 0; actDisplay();
+            document.getElementById('timer-card').className = "apple-card text-center";
+            document.getElementById('btn-principal').innerText = "INICIAR SERIE";
+        }
+
+        function render() {
+            const cont = document.getElementById('contenedor-ejercicios');
+            cont.innerHTML = '';
+            const ejs = [{n:"Press Banca", eq:"Barra", r:"4x10"}, {n:"Polea Alta", eq:"Multiestación", r:"3x12"}, {n:"Rodillo", eq:"Bici", r:"15 min"}];
+            ejs.forEach((e, i) => {
+                cont.innerHTML += `
+                    <div class="apple-card py-4 bg-slate-900/50 flex justify-between items-center">
+                        <div><h3 class="font-bold text-sm uppercase">${e.n}</h3><p class="text-[9px] text-blue-400 italic">${e.eq}</p></div>
+                        <div class="flex gap-2">
+                            <input type="number" id="kg-${i}" class="bg-slate-800 text-white rounded w-12 text-center text-xs p-1" placeholder="Kg" onchange="localStorage.setItem('kg-${i}', this.value)">
+                            <button class="bg-green-700/50 text-green-400 px-2 rounded font-bold text-[10px]">OK</button>
                         </div>
-                        <div class="flex justify-between items-center text-xs">
-                            <span>Objetivo: ${ej.reps}</span>
-                            <div>
-                                <input type="number" placeholder="Kg" class="input-dark" id="peso-${index}">
-                                <button onclick="savePeso(${index})" class="ml-1 bg-green-600 px-2 py-1 rounded text-[10px]">OK</button>
-                            </div>
-                        </div>
-                    </div>
-                `;
+                    </div>`;
+                setTimeout(() => {
+                    const s = localStorage.getItem(`kg-${i}`);
+                    if(s) document.getElementById(`kg-${i}`).value = s;
+                }, 10);
             });
         }
-
-        function startTimer() {
-            let timeLeft = 90;
-            const display = document.getElementById('timer-display');
-            display.classList.add('timer-active');
-            
-            const interval = setInterval(() => {
-                let mins = Math.floor(timeLeft / 60);
-                let secs = timeLeft % 60;
-                display.innerText = `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
-                if (timeLeft <= 0) {
-                    clearInterval(interval);
-                    display.classList.remove('timer-active');
-                    display.innerText = "01:30";
-                    alert("¡Descanso terminado! Próxima serie.");
-                }
-                timeLeft--;
-            }, 1000);
-        }
-
-        function savePeso(id) {
-            const peso = document.getElementById(`peso-${id}`).value;
-            if(peso) alert(`Registrado: ${peso}kg. ¡Buen progreso!`);
-        }
-
-        // Inicializar fecha
-        document.getElementById('fecha-display').innerText = new Date().toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long' });
-        renderEjercicios();
+        render(); actDisplay();
     </script>
 </body>
 </html>
