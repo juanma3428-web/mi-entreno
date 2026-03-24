@@ -3,77 +3,188 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Entreno Pro - Master Fijo</title>
+    <title>Entreno Pro - Versión Final Recuperada</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        body { background-color: #020617; color: white; font-family: -apple-system, sans-serif; -webkit-tap-highlight-color: transparent; overflow-x: hidden; }
+        body { background-color: #020617; color: white; font-family: -apple-system, sans-serif; -webkit-tap-highlight-color: transparent; }
         .apple-card { background: #1e293b; border-radius: 24px; padding: 20px; margin-bottom: 12px; border: 1px solid #334155; }
+        .modo-serie { background: #450a0a !important; border-color: #ef4444; }
+        .modo-descanso { background: #064e3b !important; border-color: #10b981; }
+        .dropdown-content { max-height: 0; overflow: hidden; transition: max-height 0.4s ease; }
+        .dropdown-open { max-height: 1000px; }
+        .chip { padding: 8px; border-radius: 12px; font-size: 10px; font-weight: bold; background: #334155; border: 1px solid transparent; text-align: center; cursor: pointer; }
+        .chip.active { background: #2563eb; border-color: #60a5fa; color: white; }
         
-        /* Modal de Ayuda Mejorado */
-        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); display: none; justify-content: center; align-items: center; z-index: 1000; opacity: 0; transition: opacity 0.3s; }
-        .modal-overlay.active { display: flex; opacity: 1; }
-        .modal-content { background: #1e293b; width: 90%; max-width: 350px; border-radius: 24px; padding: 25px; border: 2px solid #475569; transform: scale(0.9); transition: transform 0.3s; }
-        .modal-overlay.active .modal-content { transform: scale(1); }
-
-        /* ANIMACIÓN NATIVA (Sustituye al GIF roto) */
-        .guia-visual-nativa { width: 100%; h-40; background: #0f172a; border-radius: 16px; border: 2px solid #334155; position: relative; overflow: hidden; display: flex; align-items: center; justify-content: center; margin-bottom: 20px;}
-        .polea-rod { width: 4px; height: 100%; background: #334155; position: absolute; top: 0; left: 50%; transform: translateX(-50%); }
-        .polea-handle { width: 60px; height: 10px; background: #60a5fa; border-radius: 5px; position: absolute; top: 20px; left: 50%; transform: translateX(-50%); animation: movePolea 2.5s infinite ease-in-out; }
-        @keyframes movePolea { 0%, 100% { top: 20px; } 50% { top: 120px; } }
-        .check-text { font-size: 9px; color: #60a5fa; text-transform: uppercase; font-weight: bold; position: absolute; bottom: 10px; }
+        /* Animación de Pulso para Polar */
+        .heart-active { animation: heart-beat 0.8s infinite; color: #ef4444; }
+        @keyframes heart-beat { 0% { transform: scale(1); } 50% { transform: scale(1.1); } 100% { transform: scale(1); } }
     </style>
 </head>
 <body class="p-4 pb-32">
 
-    <div id="help-modal" class="modal-overlay" onclick="cerrarAyuda()">
-        <div class="modal-content text-center" onclick="event.stopPropagation()">
-            <h3 id="help-title" class="text-xl font-black uppercase mb-4 tracking-tight">Técnica</h3>
-            
-            <div class="guia-visual-nativa h-40">
-                <div class="polea-rod"></div>
-                <div class="polea-handle"></div>
-                <span class="check-text">Guía de Movimiento Nativa</span>
+    <div class="apple-card border-t-4 border-pink-500">
+        <p class="text-[10px] font-black uppercase text-pink-400 mb-4 tracking-widest">Sincronización Apple Health / Polar</p>
+        <div class="grid grid-cols-3 gap-3 mb-6">
+            <div class="bg-slate-900/50 p-3 rounded-2xl text-center border border-slate-700">
+                <p class="text-[8px] text-gray-400 uppercase font-bold">BPM Med.</p>
+                <p id="bpm-val" class="text-xl font-black">--</p>
             </div>
-
-            <div id="help-text" class="text-xs text-left text-gray-300 space-y-2 mb-6 bg-slate-900/50 p-4 rounded-xl border border-slate-700">
-                <p>• Pecho arriba.</p>
-                <p>• Codos hacia abajo y atrás.</p>
-                <p>• Contrae la espalda al final.</p>
-                <p>• Sube controlado.</p>
+            <div class="bg-slate-900/50 p-3 rounded-2xl text-center border border-slate-700">
+                <p class="text-[8px] text-gray-400 uppercase font-bold">Kcal</p>
+                <p id="kcal-val" class="text-xl font-black">0</p>
             </div>
-            <button onclick="cerrarAyuda()" class="w-full bg-blue-600 py-3 rounded-xl font-bold uppercase text-xs tracking-widest text-white shadow-lg shadow-blue-900/50">Entendido</button>
+            <div class="bg-slate-900/50 p-3 rounded-2xl text-center border border-slate-700">
+                <p class="text-[8px] text-gray-400 uppercase font-bold">Tiempo</p>
+                <p id="tiempo-total" class="text-xl font-black">0m</p>
+            </div>
         </div>
+        <button onclick="conectarPolar()" id="btn-sensor" class="w-full bg-pink-600/20 text-pink-400 py-3 rounded-xl border border-pink-500/30 text-xs font-black uppercase tracking-widest">
+            Vincular Banda Polar
+        </button>
     </div>
 
-    <div class="apple-card flex justify-between items-center border-t-4 border-red-600">
-        <div><p class="text-[9px] uppercase font-black text-gray-500">Banda Polar</p><span id="bpm-val" class="text-4xl font-black">--</span> <span class="text-xs text-red-500 font-bold">BPM</span></div>
-        <button onclick="conectarPolar()" id="btn-sensor" class="bg-red-600/10 text-red-500 px-4 py-2 rounded-full text-[10px] font-bold border border-red-500/20">VINCULAR</button>
-    </div>
-
-    <div id="timer-card" class="apple-card text-center transition-all duration-500 mt-4">
-        <div id="display" class="text-6xl font-mono font-bold mb-4">00:00</div>
-        <button id="btn-principal" onclick="toggleFase()" class="w-full bg-blue-600 py-3 rounded-xl font-black text-xs uppercase tracking-widest">Iniciar Serie</button>
-    </div>
-
-    <div id="contenedor-ejercicios" class="mt-4">
-        <div class="apple-card flex justify-between items-center py-4 border-l-4 border-blue-500">
-            <div>
-                <div class="flex items-center gap-2">
-                    <h3 class="font-bold text-xs uppercase">Polea Alta</h3>
-                    <button onclick="abrirAyuda('Polea Alta')" class="w-5 h-5 bg-slate-700 rounded-full text-[10px] font-bold text-blue-400">?</button>
+    <div class="apple-card">
+        <button onclick="document.getElementById('equip-content').classList.toggle('dropdown-open')" class="w-full flex justify-between items-center">
+            <span class="text-[10px] font-black uppercase text-blue-400">Mi Equipamiento en Casa</span>
+            <span>▼</span>
+        </button>
+        <div id="equip-content" class="dropdown-content">
+            <div id="lista-equip" class="grid grid-cols-2 gap-2 mt-4">
                 </div>
-                <p class="text-[8px] text-blue-400 italic">Multiestación</p>
-            </div>
-            <input type="number" class="bg-slate-800 text-white rounded-lg w-10 text-center text-xs p-2" placeholder="Kg">
         </div>
     </div>
+
+    <div id="timer-card" class="apple-card text-center transition-all duration-500">
+        <p id="timer-label" class="text-[10px] font-black uppercase mb-2 tracking-widest text-gray-400">Listo para empezar</p>
+        <div id="display" class="text-7xl font-mono font-bold mb-4 tracking-tighter">00:00</div>
+        <div class="flex gap-2">
+            <button id="btn-principal" onclick="toggleFase()" class="flex-1 bg-blue-600 py-4 rounded-2xl font-black text-xs uppercase tracking-widest">Iniciar Serie</button>
+            <button onclick="resetSesion()" class="w-14 bg-slate-700 py-4 rounded-2xl text-xs">🔄</button>
+        </div>
+    </div>
+
+    <div id="contenedor-ejercicios"></div>
 
     <script>
-        // Funciones básicas para que el Modal funcione
-        function abrirAyuda(nombre) { document.getElementById('help-modal').classList.add('active'); }
-        function cerrarAyuda() { document.getElementById('help-modal').classList.remove('active'); }
-        // ... (resto de funciones de crono/polar de versiones anteriores) ...
-        let segundos=0,crono,estado='parado';function actDisplay(){let m=Math.floor(segundos/60),s=segundos%60;document.getElementById('display').innerText=`${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`}function toggleFase(){const b=document.getElementById('btn-principal');if(estado!=='serie'){estado='serie';segundos=0;b.innerText="TERMINAR SERIE";clearInterval(crono);crono=setInterval(()=>{segundos++;actDisplay()},1000)}else{estado='parado';segundos=0;b.innerText="INICIAR SERIE";clearInterval(crono);actDisplay()}}
+        let segundos = 0, crono, estado = 'parado', tiempoInicio = Date.now();
+        const catalogo = ["Multiestación", "Rodillo de rulos", "Bici carretera", "Mancuernas", "Silla", "Esterilla", "Barra de Pecho"].sort();
+        
+        const dbEjercicios = [
+            {n: "Press de Banca", eq: "Barra de Pecho", meta: "3 x 10"},
+            {n: "Polea Alta Espalda", eq: "Multiestación", meta: "3 x 12"},
+            {n: "Rodillo", eq: "Rodillo de rulos", meta: "20 min"}
+        ];
+
+        function init() {
+            const lista = document.getElementById('lista-equip');
+            lista.innerHTML = '';
+            catalogo.forEach(item => {
+                const active = localStorage.getItem('equip_' + item) === 'true';
+                lista.innerHTML += `<div onclick="toggleItem('${item}')" id="item-${item}" class="chip ${active ? 'active' : ''}">${item.toUpperCase()}</div>`;
+            });
+            renderEjercicios();
+            setInterval(actualizarMetricas, 10000);
+        }
+
+        function toggleItem(item) {
+            const active = localStorage.getItem('equip_' + item) === 'true';
+            localStorage.setItem('equip_' + item, !active);
+            init();
+        }
+
+        function renderEjercicios() {
+            const cont = document.getElementById('contenedor-ejercicios');
+            cont.innerHTML = '';
+            dbEjercicios.forEach((ej, i) => {
+                if (localStorage.getItem('equip_' + ej.eq) === 'true') {
+                    cont.innerHTML += `
+                        <div id="card-ej-${i}" class="apple-card flex justify-between items-center py-5 border-l-4 border-blue-500">
+                            <div>
+                                <h3 class="font-bold text-sm uppercase">${ej.n}</h3>
+                                <p class="text-[9px] text-blue-400 font-bold mb-1">${ej.meta}</p>
+                            </div>
+                            <div class="flex gap-2">
+                                <input type="number" id="kg-${i}" class="bg-slate-800 text-white rounded-lg w-12 text-center text-xs p-2 border border-slate-700" placeholder="Kg">
+                                <button onclick="siguienteEjercicio(${i})" class="bg-green-600 px-4 rounded-xl font-bold text-[10px] text-white">OK</button>
+                            </div>
+                        </div>`;
+                }
+            });
+        }
+
+        // FLUJO AUTOMÁTICO
+        function siguienteEjercicio(actualIndex) {
+            // Guardar peso
+            const kg = document.getElementById(`kg-${actualIndex}`).value;
+            localStorage.setItem(`last_kg_${actualIndex}`, kg);
+            
+            // Iniciar descanso automático
+            estado = 'descanso'; segundos = 90; 
+            document.getElementById('timer-card').className = "apple-card text-center modo-descanso transition-all";
+            document.getElementById('timer-label').innerText = "Descanso";
+            document.getElementById('btn-principal').innerText = "Saltar Descanso";
+            
+            clearInterval(crono);
+            crono = setInterval(() => {
+                segundos--; actDisplay();
+                if(segundos <= 0) { 
+                    alert("¡Descanso terminado! Dale a la siguiente serie.");
+                    resetCronoUI();
+                }
+            }, 1000);
+        }
+
+        // CONEXIÓN POLAR REAL
+        async function conectarPolar() {
+            try {
+                const device = await navigator.bluetooth.requestDevice({ filters: [{ services: ['heart_rate'] }] });
+                const server = await device.gatt.connect();
+                const service = await server.getPrimaryService('heart_rate');
+                const char = await service.getCharacteristic('heart_rate_measurement');
+                char.startNotifications();
+                char.addEventListener('characteristicvaluechanged', (e) => {
+                    const bpm = e.target.value.getUint8(1);
+                    document.getElementById('bpm-val').innerText = bpm;
+                    document.getElementById('bpm-val').classList.add('heart-active');
+                });
+                document.getElementById('btn-sensor').innerText = "BANDA POLAR CONECTADA ✅";
+            } catch (e) { alert("Bluetooth no disponible o cancelado."); }
+        }
+
+        function toggleFase() {
+            const card = document.getElementById('timer-card');
+            if (estado !== 'serie') {
+                estado = 'serie'; segundos = 0;
+                document.getElementById('btn-principal').innerText = "FINALIZAR SERIE";
+                document.getElementById('timer-label').innerText = "En Serie";
+                card.className = "apple-card text-center modo-serie transition-all";
+                clearInterval(crono);
+                crono = setInterval(() => { segundos++; actDisplay(); }, 1000);
+            } else {
+                siguienteEjercicio(-1); // Activa descanso al terminar serie
+            }
+        }
+
+        function actDisplay() {
+            let m = Math.floor(Math.abs(segundos)/60), s = Math.abs(segundos)%60;
+            document.getElementById('display').innerText = `${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`;
+        }
+
+        function resetCronoUI() {
+            clearInterval(crono); estado = 'parado'; segundos = 0; actDisplay();
+            document.getElementById('timer-card').className = "apple-card text-center transition-all";
+            document.getElementById('timer-label').innerText = "Listo";
+            document.getElementById('btn-principal').innerText = "Iniciar Serie";
+        }
+
+        function actualizarMetricas() {
+            let min = Math.floor((Date.now() - tiempoInicio) / 60000);
+            document.getElementById('tiempo-total').innerText = min + "m";
+            document.getElementById('kcal-val').innerText = Math.floor(min * 7.5); // Estima 7.5 kcal/min
+        }
+
+        init();
+        actDisplay();
     </script>
 </body>
 </html>
