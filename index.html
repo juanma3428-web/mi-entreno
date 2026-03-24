@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Apple Coach Pro - V20</title>
+    <title>Apple Coach V23 - Carga en Kg</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         body { background-color: #000; color: #fff; font-family: -apple-system, sans-serif; -webkit-tap-highlight-color: transparent; }
@@ -11,56 +11,72 @@
         .text-apple-green { color: #30d158; }
         .bg-apple-green { background-color: #30d158; }
         .drawer { max-height: 0; overflow: hidden; transition: max-height 0.5s ease-in-out; }
-        .drawer-open { max-height: 1000px; }
-        .chip-container { display: flex; align-items: center; background: #2c2c2e; border-radius: 12px; overflow: hidden; margin-bottom: 4px; }
-        .chip-container.active { border: 1px solid #30d158; }
+        .drawer-open { max-height: 1200px; }
+        .chip-container { display: flex; align-items: center; background: #2c2c2e; border-radius: 12px; overflow: hidden; margin-bottom: 6px; border: 1px solid transparent; }
+        .chip-container.active { border-color: #30d158; }
         .chip-label { flex: 1; padding: 12px; font-size: 10px; font-weight: 800; text-transform: uppercase; cursor: pointer; }
         .chip-container.active .chip-label { background: #30d158; color: #000; }
         .btn-del { padding: 12px; color: #ff3b30; font-weight: bold; }
         .timer-font { font-variant-numeric: tabular-nums; font-weight: 200; letter-spacing: -2px; }
+        .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.95); display: none; justify-content: center; align-items: center; z-index: 1000; }
+        .modal-overlay.active { display: flex; }
+        .btn-esfuerzo { width: 100%; padding: 18px; border-radius: 16px; font-weight: 800; text-transform: uppercase; font-size: 11px; margin-bottom: 8px; }
     </style>
 </head>
 <body class="p-4 pb-32">
 
+    <div id="modal-feedback" class="modal-overlay">
+        <div class="w-[90%] max-w-sm text-center">
+            <h2 class="text-2xl font-black mb-2 italic">¿Cómo fue el esfuerzo?</h2>
+            <p class="text-[10px] text-gray-500 mb-8 uppercase tracking-widest font-bold">Ajustaremos los kilos para mañana</p>
+            
+            <button onclick="procesarFeedback(-4)" class="btn-esfuerzo bg-red-600/20 text-red-500 border border-red-500/30">🥵 AGOTADOR (Bajar 4kg)</button>
+            <button onclick="procesarFeedback(-2)" class="btn-esfuerzo bg-orange-600/20 text-orange-500 border border-orange-500/30">🔥 DURO (Bajar 2kg)</button>
+            <button onclick="procesarFeedback(0)" class="btn-esfuerzo bg-blue-600/20 text-blue-400 border border-blue-500/30">👍 NORMAL (Mantener kilos)</button>
+            <button onclick="procesarFeedback(2)" class="btn-esfuerzo bg-green-600/20 text-apple-green border border-apple-green/30">✨ SUAVE (Subir 2kg mañana)</button>
+        </div>
+    </div>
+
     <div class="apple-card border-l-4 border-red-600">
         <div class="flex justify-between items-start mb-4">
             <div>
-                <p class="text-[10px] font-black text-gray-500 uppercase tracking-widest">Polar H10 Connected</p>
+                <p class="text-[10px] font-black text-gray-500 uppercase tracking-widest italic">Polar H10 Live</p>
                 <div class="flex items-baseline gap-1">
                     <span id="bpm-val" class="text-6xl font-bold tracking-tighter">--</span>
-                    <span class="text-red-500 font-bold text-sm">BPM</span>
+                    <span class="text-red-500 font-bold text-sm italic">BPM</span>
                 </div>
             </div>
             <button onclick="conectarPolar()" class="w-12 h-12 rounded-full bg-red-600/10 flex items-center justify-center text-xl">❤️</button>
         </div>
         <div class="flex justify-between font-bold border-t border-white/5 pt-4">
             <div id="kcal-val" class="text-2xl text-orange-500">0 <span class="text-xs">KCAL</span></div>
-            <div id="session-time" class="text-2xl">0:00</div>
+            <div id="session-time" class="text-2xl tracking-tighter italic">0:00</div>
         </div>
     </div>
 
     <div class="apple-card">
         <button onclick="document.getElementById('equip-drawer').classList.toggle('drawer-open')" class="w-full flex justify-between items-center">
-            <span class="text-[10px] font-black text-gray-500 uppercase tracking-widest">Mis Herramientas</span>
-            <span class="text-apple-green text-xs font-bold italic">Editar Inventario</span>
+            <span class="text-[10px] font-black text-gray-500 uppercase tracking-widest italic">Mis Pesos y Herramientas</span>
+            <span class="text-apple-green text-xs font-bold italic">Configurar</span>
         </button>
         <div id="equip-drawer" class="drawer">
-            <div class="mt-4 p-4 bg-white/5 rounded-2xl mb-4">
-                <input type="text" id="new-tool-name" class="w-full bg-black border border-white/10 rounded-xl p-3 text-xs mb-2" placeholder="Nombre de herramienta...">
-                <div class="flex gap-2">
-                    <select id="new-tool-type" class="flex-1 bg-black border border-white/10 rounded-xl p-3 text-xs text-gray-400">
-                        <option value="fuerza">Tipo: Fuerza</option>
-                        <option value="cardio">Tipo: Cardio</option>
+            <div class="mt-4 p-4 bg-white/5 rounded-2xl mb-4 border border-white/5">
+                <input type="text" id="new-tool-name" class="w-full bg-black border border-white/10 rounded-xl p-3 text-xs mb-2" placeholder="Nombre Herramienta">
+                <div class="grid grid-cols-2 gap-2 mb-2">
+                    <select id="new-tool-type" class="bg-black border border-white/10 rounded-xl p-3 text-xs text-gray-400">
+                        <option value="fuerza">Fuerza</option>
+                        <option value="cardio">Cardio</option>
                     </select>
-                    <button onclick="addTool()" class="bg-apple-green text-black px-6 rounded-xl font-black text-xs uppercase">Añadir</button>
+                    <input type="number" id="new-tool-weight" class="bg-black border border-white/10 rounded-xl p-3 text-xs" placeholder="Kg Iniciales">
                 </div>
+                <button onclick="addTool()" class="w-full bg-apple-green text-black py-3 rounded-xl font-black text-xs uppercase italic">Añadir</button>
             </div>
             <div id="lista-equip"></div>
         </div>
     </div>
 
     <div class="apple-card text-center">
-        <div id="display" class="text-7xl timer-font mb-8">00:00</div>
+        <div id="display" class="text-7xl timer-font mb-8 italic">00:00</div>
         <div class="flex gap-4">
             <button id="btn-pausa" onclick="pausar()" class="w-16 h-16 rounded-full bg-yellow-500/10 flex items-center justify-center opacity-20" disabled>
                 <span id="pause-icon" class="text-yellow-500 text-xl font-bold">||</span>
@@ -78,20 +94,20 @@
     <script>
         let seg=0, crono, running=false, paused=false, kcal=0;
         
-        // 1. Base de datos de herramientas (Persistente)
-        let myTools = JSON.parse(localStorage.getItem('myToolsV20')) || [
-            {id: 1, n: "Multiestación", t: "fuerza"},
-            {id: 2, n: "Rodillo de rulos", t: "cardio"},
-            {id: 3, n: "Cinta correr", t: "cardio"},
-            {id: 4, n: "Mancuernas", t: "fuerza"}
+        let myTools = JSON.parse(localStorage.getItem('myToolsV23')) || [
+            {id: 1, n: "Multiestación", t: "fuerza", w: 40},
+            {id: 2, n: "Rodillo de rulos", t: "cardio", w: 0},
+            {id: 3, n: "Mancuernas", t: "fuerza", w: 10}
         ];
+
+        // Ajuste acumulado de kilos (Memoria de progresión)
+        let globalWeightAdjust = parseFloat(localStorage.getItem('globalWeightAdjust')) || 0;
 
         function init() {
             renderTools();
             generarRutinaInteligente();
         }
 
-        // 2. Motor de Inteligencia de Rutina
         function generarRutinaInteligente() {
             const cont = document.getElementById('contenedor-rutina');
             const reason = document.getElementById('coach-reason');
@@ -103,43 +119,74 @@
                 return;
             }
 
-            // Lógica de periodización basada en el último entreno guardado
             const ultimaSesion = localStorage.getItem('tipo_ultima_sesion');
             let tipoHoy = (ultimaSesion === 'fuerza') ? 'cardio' : 'fuerza';
             
-            reason.innerText = (tipoHoy === 'cardio') 
-                ? "Ayer trabajamos fuerza. Hoy toca sesión aeróbica para quemar y recuperar." 
-                : "Hoy nos enfocaremos en potenciar la masa muscular y fuerza base.";
+            let adjustText = globalWeightAdjust === 0 ? "" : 
+                             (globalWeightAdjust > 0 ? ` +${globalWeightAdjust}kg extra por buen ritmo.` : ` ${globalWeightAdjust}kg por fatiga previa.`);
 
-            // Filtramos herramientas del tipo que toca hoy
+            reason.innerText = (tipoHoy === 'cardio') 
+                ? "Sesión aeróbica recomendada hoy." 
+                : `Día de fuerza.${adjustText}`;
+
             let seleccionadas = activas.filter(t => t.t === tipoHoy);
-            
-            // Si no hay herramientas del tipo que toca, usamos lo que haya
             if(seleccionadas.length === 0) seleccionadas = activas;
 
             seleccionadas.slice(0, 3).forEach(tool => {
-                let sugerencia = (tool.t === 'cardio') 
-                    ? "30-40 min a 130-140 BPM (Zona 2)" 
-                    : "4 Series de 8-10 reps (Carga Pesada)";
+                let sugerencia = "";
+                if(tool.t === 'cardio') {
+                    sugerencia = "35-40 min a ritmo constante.";
+                } else {
+                    // Lógica V23: Peso Final = Peso Herramienta + Ajuste Kg
+                    const pesoFinal = Math.max(0, tool.w + globalWeightAdjust);
+                    sugerencia = `4 Series de 10-12 Reps. Carga: ${pesoFinal}kg`;
+                }
 
                 cont.innerHTML += `
                     <div class="apple-card border-l-2 border-apple-green flex justify-between items-center py-5">
                         <div class="flex-1">
                             <h3 class="font-black text-xs uppercase italic tracking-tight">${tool.n}</h3>
-                            <p class="text-[10px] text-gray-500 font-bold uppercase mt-1">${sugerencia}</p>
+                            <p class="text-[10px] text-gray-500 font-bold uppercase mt-1 italic">${sugerencia}</p>
                         </div>
-                        <button onclick="completarEj('`+tool.t+`')" class="bg-white/5 border border-white/10 px-4 py-2 rounded-xl font-black text-[10px] uppercase text-apple-green">Log</button>
+                        <button onclick="completarEj('`+tool.t+`')" class="bg-white/5 border border-white/10 px-4 py-2 rounded-xl font-black text-[10px] uppercase text-apple-green">LOG</button>
                     </div>`;
             });
         }
 
-        function completarEj(tipo) {
-            localStorage.setItem('tipo_ultima_sesion', tipo);
-            alert("Buen trabajo. El Coach ha anotado el progreso.");
+        function toggleEntreno() {
+            if (!running) {
+                running = true;
+                document.getElementById('btn-principal').innerText = "FINALIZAR";
+                document.getElementById('btn-principal').classList.replace('bg-apple-green','bg-red-600');
+                document.getElementById('btn-pausa').disabled = false;
+                document.getElementById('btn-pausa').classList.remove('opacity-20');
+                crono = setInterval(() => { seg++; updateDisp(); }, 1000);
+            } else {
+                document.getElementById('modal-feedback').classList.add('active');
+            }
+        }
+
+        function procesarFeedback(kgChange) {
+            // Aplicamos el cambio directo de kilos
+            globalWeightAdjust += kgChange;
+            localStorage.setItem('globalWeightAdjust', globalWeightAdjust);
+            
+            running = false; clearInterval(crono);
+            document.getElementById('btn-principal').innerText = "INICIAR SESIÓN";
+            document.getElementById('btn-principal').className = "flex-1 bg-apple-green text-black rounded-2xl font-black text-sm uppercase tracking-widest italic";
+            document.getElementById('modal-feedback').classList.remove('active');
+            
+            const msg = kgChange > 0 ? `Entendido. Subiremos ${kgChange}kg mañana.` : 
+                       (kgChange < 0 ? `Entendido. Bajaremos ${Math.abs(kgChange)}kg mañana.` : "Mantendremos los pesos actuales.");
+            alert(msg);
             generarRutinaInteligente();
         }
 
-        // 3. Gestión de Inventario
+        function completarEj(tipo) {
+            localStorage.setItem('tipo_ultima_sesion', tipo);
+            generarRutinaInteligente();
+        }
+
         function renderTools() {
             const cont = document.getElementById('lista-equip');
             cont.innerHTML = '';
@@ -147,7 +194,9 @@
                 const act = localStorage.getItem('e_'+tool.n) === 'true';
                 cont.innerHTML += `
                     <div class="chip-container ${act?'active':''}">
-                        <div class="chip-label" onclick="toggleTool('${tool.n}')">${tool.n} <span class="opacity-50 text-[8px] ml-1">(${tool.t})</span></div>
+                        <div class="chip-label" onclick="toggleTool('${tool.n}')">
+                            ${tool.n} <span class="opacity-40 text-[8px] ml-1">(${tool.w}kg base)</span>
+                        </div>
                         <button onclick="deleteTool(${tool.id})" class="btn-del text-xs">✕</button>
                     </div>`;
             });
@@ -156,32 +205,30 @@
         function addTool() {
             const name = document.getElementById('new-tool-name').value.trim();
             const type = document.getElementById('new-tool-type').value;
+            const weight = document.getElementById('new-tool-weight').value || 0;
             if(name) {
-                const newTool = { id: Date.now(), n: name, t: type };
+                const newTool = { id: Date.now(), n: name, t: type, w: parseFloat(weight) };
                 myTools.push(newTool);
-                localStorage.setItem('myToolsV20', JSON.stringify(myTools));
+                localStorage.setItem('myToolsV23', JSON.stringify(myTools));
                 localStorage.setItem('e_'+name, 'true');
                 document.getElementById('new-tool-name').value = '';
-                renderTools();
-                generarRutinaInteligente();
+                document.getElementById('new-tool-weight').value = '';
+                init();
             }
         }
 
         function deleteTool(id) {
             myTools = myTools.filter(t => t.id !== id);
-            localStorage.setItem('myToolsV20', JSON.stringify(myTools));
-            renderTools();
-            generarRutinaInteligente();
+            localStorage.setItem('myToolsV23', JSON.stringify(myTools));
+            init();
         }
 
         function toggleTool(name) {
             const val = localStorage.getItem('e_'+name) === 'true';
             localStorage.setItem('e_'+name, !val);
-            renderTools();
-            generarRutinaInteligente();
+            init();
         }
 
-        // 4. Lógica de Sesión y Polar
         async function conectarPolar() {
             try {
                 const device = await navigator.bluetooth.requestDevice({ filters: [{ services: ['heart_rate'] }] });
@@ -196,19 +243,6 @@
                     document.getElementById('kcal-val').innerHTML = `${Math.floor(kcal)} <span class="text-xs">KCAL</span>`;
                 });
             } catch (e) { console.log(e); }
-        }
-
-        function toggleEntreno() {
-            const btn = document.getElementById('btn-principal'), pBtn = document.getElementById('btn-pausa');
-            if (!running) {
-                running = true; btn.innerText = "FINALIZAR"; btn.classList.replace('bg-apple-green','bg-red-600'); btn.classList.replace('text-black','text-white');
-                pBtn.disabled = false; pBtn.classList.remove('opacity-20');
-                crono = setInterval(() => { seg++; updateDisp(); }, 1000);
-            } else {
-                running = false; clearInterval(crono);
-                btn.innerText = "INICIAR"; btn.classList.replace('bg-red-600','bg-apple-green'); btn.classList.replace('text-white','text-black');
-                pBtn.disabled = true; pBtn.classList.add('opacity-20');
-            }
         }
 
         function updateDisp() {
