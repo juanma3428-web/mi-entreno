@@ -3,145 +3,165 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Entreno - Apple Style</title>
+    <title>Apple Entreno Pro - V15</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        body { background-color: #000; color: #fff; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; -webkit-tap-highlight-color: transparent; }
-        
-        /* Estilo Anillos de Apple */
-        .ring-card { background: #1c1c1e; border-radius: 20px; padding: 18px; margin-bottom: 12px; }
-        
-        /* Colores Apple Fitness */
+        body { background-color: #000; color: #fff; font-family: -apple-system, sans-serif; -webkit-tap-highlight-color: transparent; }
+        .ring-card { background: #1c1c1e; border-radius: 20px; padding: 20px; margin-bottom: 12px; }
         .text-apple-green { color: #30d158; }
         .bg-apple-green { background-color: #30d158; }
+        .text-apple-blue { color: #0a84ff; }
         .text-apple-red { color: #ff3b30; }
-        .text-apple-yellow { color: #ffd60a; }
+        .apple-btn { border-radius: 14px; font-weight: 700; transition: all 0.2s; border: none; }
+        .apple-btn:active { transform: scale(0.96); opacity: 0.9; }
         
-        /* Animación de latido real */
-        @keyframes heartbeat {
-            0% { transform: scale(1); opacity: 1; }
-            50% { transform: scale(1.1); opacity: 0.8; }
-            100% { transform: scale(1); opacity: 1; }
-        }
-        .heart-pulse { animation: heartbeat 0.8s infinite; }
-
-        /* Estilo de los botones redondos de Apple */
-        .apple-btn { border-radius: 12px; font-weight: 600; transition: all 0.2s; border: none; }
-        .apple-btn:active { transform: scale(0.96); opacity: 0.8; }
+        /* Animación de alerta de zona cardíaca */
+        @keyframes zone-alert { 0%, 100% { background: #1c1c1e; } 50% { background: #450a0a; } }
+        .out-of-zone { animation: zone-alert 1.5s infinite; border: 1px solid #ff3b30; }
         
-        /* Desplegable oculto */
-        .drawer { max-height: 0; overflow: hidden; transition: max-height 0.4s ease; }
-        .drawer-open { max-height: 1000px; }
+        #feedback-modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.95); z-index: 100; justify-content: center; align-items: center; padding: 20px; }
     </style>
 </head>
-<body class="p-4 pb-24">
+<body class="p-4 pb-32">
 
-    <div class="ring-card border-l-4 border-red-500">
+    <div id="feedback-modal" class="hidden">
+        <div class="ring-card w-full max-w-sm text-center border border-white/10">
+            <h2 class="text-2xl font-bold mb-2 text-apple-green">¡Buen trabajo!</h2>
+            <p class="text-sm text-gray-400 mb-8 text-balance">¿Cómo calificarías el esfuerzo de esta sesión?</p>
+            <div class="space-y-3">
+                <button onclick="cerrarFeedback('suave')" class="w-full apple-btn bg-white/5 text-apple-blue py-5 uppercase text-xs tracking-widest">Suave (Subir carga)</button>
+                <button onclick="cerrarFeedback('perfecto')" class="w-full apple-btn bg-white/5 text-apple-green py-5 uppercase text-xs tracking-widest">Perfecto</button>
+                <button onclick="cerrarFeedback('duro')" class="w-full apple-btn bg-white/5 text-apple-red py-5 uppercase text-xs tracking-widest">Muy duro (Ajustar)</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="bio-panel" class="ring-card border-l-4 border-apple-red transition-all duration-700">
         <div class="flex justify-between items-start">
             <div>
                 <p class="text-[11px] font-bold text-gray-500 uppercase tracking-tight">Frecuencia Cardíaca</p>
                 <div class="flex items-baseline gap-1">
-                    <span id="bpm-val" class="text-5xl font-bold tracking-tighter">--</span>
+                    <span id="bpm-val" class="text-6xl font-bold tracking-tighter">--</span>
                     <span class="text-apple-red font-bold text-sm">BPM</span>
                 </div>
             </div>
-            <button onclick="conectarPolar()" id="heart-icon" class="text-2xl">❤️</button>
+            <button onclick="conectarPolar()" class="w-12 h-12 rounded-full bg-white/5 flex items-center justify-center text-xl">❤️</button>
         </div>
-        <div class="grid grid-cols-2 gap-4 mt-4 pt-4 border-t border-white/10">
-            <div>
-                <p class="text-[10px] text-gray-500 font-bold uppercase">Calorías</p>
-                <p class="text-xl font-bold"><span id="kcal-val">0</span> <span class="text-xs text-orange-500 font-medium">KCAL</span></p>
-            </div>
-            <div>
-                <p class="text-[10px] text-gray-500 font-bold uppercase">Tiempo Total</p>
-                <p id="total-session-time" class="text-xl font-bold">0:00</p>
-            </div>
-        </div>
-    </div>
-
-    <div class="ring-card">
-        <button onclick="document.getElementById('equip-drawer').classList.toggle('drawer-open')" class="w-full flex justify-between items-center">
-            <span class="text-sm font-bold">Configurar mi gimnasio</span>
-            <span class="text-apple-green text-xs">Editar</span>
-        </button>
-        <div id="equip-drawer" class="drawer">
-            <div id="equip-list" class="grid grid-cols-2 gap-2 mt-4">
-                </div>
-        </div>
-    </div>
-
-    <div id="timer-bg" class="ring-card text-center transition-colors duration-500">
-        <p id="timer-status" class="text-[10px] font-black uppercase text-gray-500 mb-1 tracking-widest">Listo</p>
-        <div id="timer-display" class="text-7xl font-light tracking-tighter mb-6">00:00</div>
         
-        <div class="flex gap-3">
-            <button id="pause-btn" onclick="pausar()" class="w-16 h-16 rounded-full bg-apple-yellow/20 flex items-center justify-center opacity-30" disabled>
-                <span id="pause-icon" class="text-apple-yellow text-xl">||</span>
-            </button>
-            
-            <button id="main-btn" onclick="toggleEntreno()" class="flex-1 apple-btn bg-apple-green text-black text-sm uppercase tracking-widest font-black">
-                Iniciar
-            </button>
+        <div id="goal-box" class="mt-4 p-4 bg-white/5 rounded-2xl hidden">
+            <div class="flex items-center gap-2 mb-1">
+                <div class="w-2 h-2 bg-apple-blue rounded-full animate-pulse"></div>
+                <p class="text-[10px] text-apple-blue font-black uppercase">Objetivo Actual</p>
+            </div>
+            <p id="goal-desc" class="text-lg font-bold tracking-tight">Selecciona un ejercicio...</p>
         </div>
     </div>
 
-    <div id="coach-section">
-        <h2 class="text-sm font-bold text-gray-500 ml-2 mb-3 uppercase tracking-widest">Siguiente Ejercicio</h2>
-        <div id="exercises-cont"></div>
+    <div class="ring-card text-center">
+        <p id="timer-label" class="text-[10px] font-bold text-gray-500 uppercase mb-1 tracking-widest">Tiempo de Trabajo</p>
+        <div id="timer-display" class="text-7xl font-light tracking-tighter mb-8 italic">00:00</div>
+        
+        <div class="flex gap-4">
+            <button id="pause-btn" onclick="pausar()" class="w-16 h-16 rounded-full bg-yellow-500/10 flex items-center justify-center opacity-30" disabled>
+                <span id="pause-icon" class="text-yellow-500 text-xl font-bold">||</span>
+            </button>
+            <button id="main-btn" onclick="toggleEntreno()" class="flex-1 apple-btn bg-apple-green text-black text-sm uppercase font-black tracking-widest italic">Iniciar</button>
+        </div>
+    </div>
+
+    <div id="plan-section">
+        <h2 class="text-[11px] font-bold text-gray-500 ml-2 mb-4 uppercase tracking-[0.2em]">Programación de Hoy</h2>
+        <div id="exercises-list" class="space-y-3"></div>
     </div>
 
     <script>
-        let seg = 0, crono, running = false, paused = false;
-        const eqList = ["Multiestación", "Rodillo de rulos", "Bici carretera", "Mancuernas", "Silla", "Esterilla", "Barra olímpica"].sort();
+        let seg = 0, crono, running = false, paused = false, targetBPM = 0;
         
-        const db = [
-            {n: "Press de Banca", eq: "Multiestación", t: "Empuja desde el pecho.", link: "https://www.youtube.com/results?search_query=tecnica+press+banca"},
-            {n: "Polea Alta", eq: "Multiestación", t: "Codos abajo y espalda recta.", link: "https://www.youtube.com/results?search_query=polea+alta+tecnica"},
-            {n: "Rodillo", eq: "Rodillo de rulos", t: "Mantén cadencia fluida.", link: "https://www.youtube.com/results?search_query=entrenamiento+rodillo"}
+        // Base de datos de ejercicios con la programación que pediste
+        const ejercicios = [
+            {id:1, n: "Rodillo de rulos", eq: "Rodillo de rulos", meta: "35 min a 135 BPM", bpm: 135, min: 35},
+            {id:2, n: "Cinta de correr", eq: "Cinta de correr", meta: "12 min (Intensidad Máx)", bpm: 155, min: 12},
+            {id:3, n: "Press de Banca", eq: "Multiestación", meta: "3 Series x 10 (90s desc.)", series: 3, desc: 90},
+            {id:4, n: "Polea Alta", eq: "Multiestación", meta: "4 Series x 12 (60s desc.)", series: 4, desc: 60}
         ];
 
         function init() {
-            const cont = document.getElementById('equip-list');
-            eqList.forEach(e => {
-                const act = localStorage.getItem('e_'+e) === 'true';
-                cont.innerHTML += `<button onclick="toggleEq('${e}')" class="p-3 rounded-xl text-[10px] font-bold ${act?'bg-apple-green text-black':'bg-white/5 text-gray-400'}">${e.toUpperCase()}</button>`;
-            });
-            renderCoach();
+            renderPlan();
         }
 
-        function toggleEq(e) {
-            const val = localStorage.getItem('e_'+e) === 'true';
-            localStorage.setItem('e_'+e, !val);
-            location.reload();
-        }
-
-        function renderCoach() {
-            const cont = document.getElementById('exercises-cont');
-            const filtered = db.filter(ex => localStorage.getItem('e_'+ex.eq) === 'true');
-            
-            if(filtered.length === 0) {
-                cont.innerHTML = '<p class="text-xs text-gray-500 p-4 italic">Selecciona qué herramientas tienes hoy para empezar el entreno.</p>';
-                return;
-            }
-
-            filtered.forEach((ex, i) => {
-                cont.innerHTML += `
-                    <div class="ring-card border-l-2 border-apple-green">
-                        <div class="flex justify-between items-start">
-                            <div onclick="window.open('${ex.link}')">
-                                <h3 class="font-bold text-lg">${ex.n} <span class="text-apple-green text-xs">ⓘ</span></h3>
-                                <p class="text-xs text-gray-500">${ex.t}</p>
+        function renderPlan() {
+            const list = document.getElementById('exercises-list');
+            list.innerHTML = '';
+            ejercicios.forEach((ex, i) => {
+                list.innerHTML += `
+                    <div onclick="fijarMeta(${i})" class="ring-card border-l-2 border-apple-blue active:scale-95 transition-transform">
+                        <div class="flex justify-between items-center">
+                            <div>
+                                <h3 class="font-bold text-lg leading-tight">${ex.n}</h3>
+                                <p class="text-xs text-apple-blue font-bold uppercase tracking-tight mt-1">${ex.meta}</p>
                             </div>
-                            <div class="flex items-center gap-2">
-                                <input type="number" id="kg-${i}" class="w-12 bg-white/10 rounded-lg p-2 text-center text-sm font-bold" placeholder="Kg">
-                                <button onclick="nextStep(${i})" class="bg-white text-black p-2 rounded-lg font-bold text-xs uppercase">OK</button>
-                            </div>
+                            <button class="bg-white/10 px-4 py-2 rounded-xl text-[10px] font-black text-white/60">FIJAR</button>
                         </div>
                     </div>`;
             });
         }
 
-        // BLUETOOTH POLAR NATIVO
+        function fijarMeta(idx) {
+            const ex = ejercicios[idx];
+            targetBPM = ex.bpm || 0;
+            document.getElementById('goal-box').classList.remove('hidden');
+            document.getElementById('goal-desc').innerText = ex.meta;
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function toggleEntreno() {
+            const btn = document.getElementById('main-btn');
+            const pBtn = document.getElementById('pause-btn');
+            if (!running) {
+                running = true; 
+                btn.innerText = "Finalizar"; 
+                btn.className = "flex-1 apple-btn bg-red-600 text-white text-sm uppercase font-black tracking-widest italic";
+                pBtn.disabled = false; pBtn.classList.remove('opacity-30');
+                document.getElementById('timer-label').innerText = "Entrenando";
+                crono = setInterval(() => { seg++; updateDisplay(); }, 1000);
+            } else {
+                finalizarSesion();
+            }
+        }
+
+        function updateDisplay() {
+            let m = Math.floor(seg / 60), s = seg % 60;
+            document.getElementById('timer-display').innerText = `${m}:${s.toString().padStart(2, '0')}`;
+        }
+
+        function pausar() {
+            const icon = document.getElementById('pause-icon');
+            if (!paused) { 
+                paused = true; clearInterval(crono); icon.innerText = "▶"; 
+                document.getElementById('timer-label').innerText = "En Pausa";
+            } else { 
+                paused = false; icon.innerText = "||"; 
+                document.getElementById('timer-label').innerText = "Entrenando";
+                crono = setInterval(() => { seg++; updateDisplay(); }, 1000); 
+            }
+        }
+
+        function finalizarSesion() {
+            clearInterval(crono);
+            document.getElementById('feedback-modal').classList.replace('hidden', 'flex');
+        }
+
+        function cerrarFeedback(nivel) {
+            document.getElementById('feedback-modal').classList.replace('flex', 'hidden');
+            seg = 0; running = false; updateDisplay();
+            const btn = document.getElementById('main-btn');
+            btn.innerText = "Iniciar";
+            btn.className = "flex-1 apple-btn bg-apple-green text-black text-sm uppercase font-black tracking-widest italic";
+            document.getElementById('pause-btn').disabled = true; document.getElementById('pause-btn').classList.add('opacity-30');
+            document.getElementById('goal-box').classList.add('hidden');
+            alert("Feedback guardado. Entrenador actualizado.");
+        }
+
         async function conectarPolar() {
             try {
                 const device = await navigator.bluetooth.requestDevice({ filters: [{ services: ['heart_rate'] }] });
@@ -150,62 +170,19 @@
                 const char = await service.getCharacteristic('heart_rate_measurement');
                 char.startNotifications();
                 char.addEventListener('characteristicvaluechanged', (e) => {
-                    const bpm = e.target.value.getUint8(1);
-                    document.getElementById('bpm-val').innerText = bpm;
-                    document.getElementById('heart-icon').classList.add('heart-pulse');
-                    document.getElementById('kcal-val').innerText = Math.floor(seg * 0.12); // Estimación
+                    const val = e.target.value.getUint8(1);
+                    const bpmEl = document.getElementById('bpm-val');
+                    const panel = document.getElementById('bio-panel');
+                    bpmEl.innerText = val;
+                    
+                    // Lógica de Alerta de Zona Cardíaca
+                    if(targetBPM > 0 && Math.abs(val - targetBPM) > 10) {
+                        panel.classList.add('out-of-zone');
+                    } else {
+                        panel.classList.remove('out-of-zone');
+                    }
                 });
-            } catch (e) { console.log("Bluetooth cancelado"); }
-        }
-
-        // LÓGICA DE ENTRENADOR (CRONO)
-        function toggleEntreno() {
-            const mainBtn = document.getElementById('main-btn');
-            const pBtn = document.getElementById('pause-btn');
-            
-            if (!running) {
-                running = true; paused = false;
-                mainBtn.innerText = "Finalizar";
-                mainBtn.className = "flex-1 apple-btn bg-red-500 text-white text-sm uppercase font-black";
-                pBtn.disabled = false; pBtn.classList.remove('opacity-30');
-                document.getElementById('timer-status').innerText = "En Serie";
-                crono = setInterval(() => { seg++; updateDisplay(); }, 1000);
-            } else {
-                running = false;
-                clearInterval(crono);
-                mainBtn.innerText = "Iniciar";
-                mainBtn.className = "flex-1 apple-btn bg-apple-green text-black text-sm uppercase font-black";
-                pBtn.disabled = true; pBtn.classList.add('opacity-30');
-                document.getElementById('timer-status').innerText = "Listo";
-            }
-        }
-
-        function pausar() {
-            const pBtn = document.getElementById('pause-btn');
-            const icon = document.getElementById('pause-icon');
-            if (!paused) {
-                paused = true;
-                clearInterval(crono);
-                icon.innerText = "▶";
-                document.getElementById('timer-status').innerText = "Pausa";
-            } else {
-                paused = false;
-                icon.innerText = "||";
-                document.getElementById('timer-status').innerText = "En Serie";
-                crono = setInterval(() => { seg++; updateDisplay(); }, 1000);
-            }
-        }
-
-        function updateDisplay() {
-            let m = Math.floor(seg / 60), s = seg % 60;
-            document.getElementById('timer-display').innerText = `${m}:${s.toString().padStart(2, '0')}`;
-            document.getElementById('total-session-time').innerText = `${m}:${s.toString().padStart(2, '0')}`;
-        }
-
-        function nextStep(i) {
-            alert("Serie completada. ¡Buen trabajo!");
-            // Aquí la app "recuerda" y podría cambiar el orden mañana
-            localStorage.setItem('ultimo_entreno', Date.now());
+            } catch (err) { console.log(err); }
         }
 
         init();
