@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>TRAVA COACH V30 - Responsive Fix</title>
+    <title>TRAVA COACH V30</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap');
@@ -12,8 +12,6 @@
             --strava-orange: #FC6100;
             --strava-black: #121212;
             --strava-grey: #242428;
-            --strava-input-bg: #333337;
-            --strava-input-border: #444448;
         }
 
         body { 
@@ -21,7 +19,6 @@
             color: #FFFFFF; 
             font-family: 'Inter', sans-serif; 
             -webkit-tap-highlight-color: transparent; 
-            overflow-x: hidden; /* Evita cualquier desplazamiento horizontal residual */
         }
 
         .strava-card { 
@@ -30,8 +27,6 @@
             padding: 20px; 
             margin-bottom: 16px; 
             border-bottom: 2px solid rgba(252, 97, 0, 0.2);
-            width: 100%; /* Asegura que la tarjeta ocupe todo el ancho disponible */
-            box-sizing: border-box; /* Incluye padding y border en el ancho total */
         }
 
         .text-strava { color: var(--strava-orange); }
@@ -50,7 +45,6 @@
             z-index: 100; 
             align-items: center; justify-content: center; 
             padding: 20px; 
-            box-sizing: border-box;
         }
 
         .btn-strava {
@@ -61,125 +55,116 @@
             letter-spacing: 0.5px;
             border-radius: 4px;
             transition: transform 0.1s;
-            width: 100%; /* Botones a ancho completo por defecto */
         }
         
         .btn-strava:active { transform: scale(0.98); }
 
-        /* Estilos base para inputs para asegurar responsividad */
         input, select {
-            background: var(--strava-input-bg) !important;
-            border: 1px solid var(--strava-input-border) !important;
+            background: #333337 !important;
+            border: 1px solid #444448 !important;
             border-radius: 4px !important;
             color: white !important;
-            width: 100% !important; /* Fuerza a ocupar todo el ancho del contenedor */
-            box-sizing: border-box !important; /* Crucial para responsividad */
-            padding: 1rem !important; /* py-4 en Tailwind */
         }
 
         #mision-container { min-height: 50px; }
-
-        /* Ajustes específicos para el header en pantallas muy pequeñas */
-        @media (max-width: 350px) {
-            h1 { text-align: center; margin-bottom: 1rem; }
-            .flex-gap-3 { justify-content: center; width: 100%; }
-        }
     </style>
 </head>
-<body class="p-4 pb-32"> <div id="feedback-modal" class="modal-overlay">
-        <div class="strava-card w-full max-w-lg border-t-4 border-strava">
+<body class="p-4 pb-32">
+
+    <div id="feedback-modal" class="modal-overlay">
+        <div class="strava-card w-full border-t-4 border-strava">
             <h2 class="text-2xl font-black uppercase mb-1">Actividad Finalizada</h2>
             <p id="resumen-sesion" class="text-xs text-gray-400 font-bold mb-8 italic"></p>
             <div class="grid grid-cols-1 gap-3">
-                <button onclick="saveFeedback(0.8)" class="bg-white/10 p-4 rounded text-xs font-black uppercase italic w-full">Esfuerzo Percibido: Bajo</button>
-                <button onclick="saveFeedback(1.0)" class="bg-strava p-4 rounded text-xs font-black uppercase italic w-full">Esfuerzo Percibido: Óptimo</button>
-                <button onclick="saveFeedback(1.3)" class="bg-white/10 p-4 rounded text-xs font-black uppercase italic w-full">Esfuerzo Percibido: Máximo</button>
+                <button onclick="saveFeedback(0.8)" class="bg-white/10 p-4 rounded text-xs font-black uppercase italic">Esfuerzo Percibido: Bajo</button>
+                <button onclick="saveFeedback(1.0)" class="bg-strava p-4 rounded text-xs font-black uppercase italic">Esfuerzo Percibido: Óptimo</button>
+                <button onclick="saveFeedback(1.3)" class="bg-white/10 p-4 rounded text-xs font-black uppercase italic">Esfuerzo Percibido: Máximo</button>
             </div>
         </div>
     </div>
 
-    <div class="flex flex-wrap justify-between items-center mb-8 px-1">
-        <div class="mb-2 sm:mb-0">
+    <div class="flex justify-between items-center mb-8 px-1">
+        <div>
             <h1 class="text-2xl font-black tracking-tighter uppercase italic leading-none">TRAVA <span class="text-strava">COACH</span></h1>
             <p class="text-[9px] text-gray-500 font-bold uppercase tracking-widest mt-1">Intelligence BM 450 + Polar H10</p>
         </div>
-        <div class="flex gap-3 items-center">
-            <button onclick="toggleDrawer('drawer-tanita')" class="text-xl p-2 hover:bg-white/10 rounded">📊</button>
-            <button onclick="toggleDrawer('equip-drawer')" class="text-xl p-2 hover:bg-white/10 rounded">🛠️</button>
+        <div class="flex gap-3">
+            <button onclick="toggleDrawer('drawer-tanita')" class="text-xl">📊</button>
+            <button onclick="toggleDrawer('equip-drawer')" class="text-xl">🛠️</button>
         </div>
     </div>
 
-    <div id="mision-container" class="space-y-4 mb-10 w-full"></div>
+    <div id="mision-container" class="space-y-4 mb-10"></div>
 
     <div class="strava-card shadow-xl">
-        <div class="flex flex-wrap justify-between items-start mb-6 gap-4">
-            <div class="flex-1 min-w-[150px]">
+        <div class="flex justify-between items-start mb-6">
+            <div>
                 <p class="text-[10px] font-black text-strava uppercase tracking-widest mb-1">Tiempo de Actividad</p>
-                <div id="display" class="text-6xl timer-font italic leading-none truncate">00:00</div>
+                <div id="display" class="text-6xl timer-font italic leading-none">00:00</div>
                 <div class="flex items-center gap-2 mt-4">
                     <span id="kcal-val" class="text-2xl font-black text-white leading-none">0</span>
                     <p class="text-[10px] font-bold text-gray-500 uppercase">Calorías</p>
                 </div>
             </div>
-            <div class="text-right flex flex-col items-end flex-1 min-w-[150px]">
+            <div class="text-right flex flex-col items-end">
                 <p class="text-[10px] font-black text-strava uppercase tracking-widest mb-1">Pulso</p>
                 <div class="flex items-center gap-2">
                     <span id="bpm-val" class="text-5xl font-black text-white leading-none tracking-tighter">--</span>
-                    <button onclick="connectPolar()" id="polar-btn" class="text-2xl hover:scale-110 transition-transform">🧡</button>
+                    <button onclick="connectPolar()" id="polar-btn" class="text-2xl">🧡</button>
                 </div>
                 <p id="polar-status" class="text-[8px] font-bold text-gray-500 uppercase mt-2 italic">Sensor Desconectado</p>
             </div>
         </div>
         
-        <div class="grid grid-cols-1 xs:grid-cols-3 gap-3">
-            <button onclick="toggleEntreno()" id="btn-start" class="btn-strava p-5 xs:col-span-2 text-sm">Iniciar Actividad</button>
-            <button onclick="pausarEntreno()" id="btn-pause" class="bg-white/10 text-white p-5 rounded font-black text-xs uppercase italic border border-white/5 active:scale-95">Pausa</button>
+        <div class="flex gap-3">
+            <button onclick="toggleEntreno()" id="btn-start" class="btn-strava p-5 flex-[2] text-sm">Iniciar Actividad</button>
+            <button onclick="pausarEntreno()" id="btn-pause" class="bg-white/10 text-white p-5 flex-1 rounded font-black text-xs uppercase italic border border-white/5">Pausa</button>
         </div>
     </div>
 
     <div id="drawer-tanita" class="drawer">
-        <div class="strava-card bg-[#1a1a1e] border border-white/5">
+        <div class="strava-card bg-[#1a1a1e]">
             <p class="text-xs font-black text-strava uppercase mb-4 tracking-widest italic">Composición Tanita</p>
-            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                <input type="number" id="tan-p" class="p-4 text-center text-sm font-bold w-full" placeholder="PESO">
-                <input type="number" id="tan-g" class="p-4 text-center text-sm font-bold w-full" placeholder="% GRASA">
-                <input type="number" id="tan-m" class="p-4 text-center text-sm font-bold w-full" placeholder="% MUSC">
+            <div class="grid grid-cols-3 gap-3">
+                <input type="number" id="tan-p" class="p-4 text-center text-sm font-bold" placeholder="PESO">
+                <input type="number" id="tan-g" class="p-4 text-center text-sm font-bold" placeholder="% GRASA">
+                <input type="number" id="tan-m" class="p-4 text-center text-sm font-bold" placeholder="% MUSC">
             </div>
-            <button onclick="saveTanita()" class="w-full mt-4 bg-white text-black py-4 rounded font-black text-xs uppercase italic active:bg-strava active:text-white">Actualizar Métricas</button>
+            <button onclick="saveTanita()" class="w-full mt-4 bg-white text-black py-4 rounded font-black text-xs uppercase italic">Actualizar Métricas</button>
         </div>
     </div>
 
     <div id="equip-drawer" class="drawer">
-        <div class="strava-card bg-[#1a1a1e] mb-2 border border-white/5">
+        <div class="strava-card bg-[#1a1a1e] mb-2">
             <p class="text-xs font-black text-gray-400 uppercase mb-4 tracking-widest italic">Inventario BM 450</p>
             <div class="flex flex-col gap-3">
-                <div class="flex flex-col sm:flex-row gap-2">
-                    <input type="number" id="dw" class="flex-1 p-4 text-sm font-bold w-full" placeholder="Peso (kg)">
-                    <input type="number" id="dq" class="flex-1 p-4 text-sm font-bold w-full" placeholder="Cantidad">
+                <div class="flex gap-2">
+                    <input type="number" id="dw" class="flex-1 p-4 text-sm font-bold" placeholder="Peso (kg)">
+                    <input type="number" id="dq" class="flex-1 p-4 text-sm font-bold" placeholder="Cantidad">
                 </div>
-                <button onclick="addDisc()" class="w-full bg-white/5 text-white p-4 rounded text-xs font-black uppercase italic border border-white/10 active:border-strava active:text-strava">Registrar Material</button>
+                <button onclick="addDisc()" class="w-full bg-white/5 text-white p-4 rounded text-xs font-black uppercase italic border border-white/10">Registrar Material</button>
             </div>
-            <div id="lista-discos" class="flex flex-wrap gap-2 mt-4 w-full"></div>
+            <div id="lista-discos" class="flex flex-wrap gap-2 mt-4"></div>
         </div>
 
-        <div class="strava-card bg-[#1a1a1e] border border-white/5">
+        <div class="strava-card bg-[#1a1a1e]">
             <p class="text-xs font-black text-gray-400 uppercase mb-4 tracking-widest italic">Gestionar Herramientas</p>
             <input type="text" id="tn" class="w-full p-4 text-sm font-bold mb-3" placeholder="Nombre del Ejercicio">
-            <div class="flex flex-col sm:flex-row gap-2 mb-4">
-                <select id="tt" class="flex-1 p-4 text-xs font-bold uppercase w-full">
+            <div class="flex gap-2 mb-4">
+                <select id="tt" class="flex-1 p-4 text-xs font-bold uppercase">
                     <option value="fuerza">Fuerza</option>
                     <option value="calistenia">Calistenia</option>
                     <option value="cardio">Cardio</option>
                 </select>
-                <input type="number" id="tw" class="flex-1 p-4 text-sm font-bold w-full" placeholder="Kg Base">
+                <input type="number" id="tw" class="flex-1 p-4 text-sm font-bold" placeholder="Kg Base">
             </div>
             <button onclick="addTool()" class="w-full btn-strava py-4 text-xs">Añadir a Memoria</button>
-            <div id="lista-herramientas" class="mt-4 space-y-2 w-full"></div>
+            <div id="lista-herramientas" class="mt-4 space-y-2"></div>
         </div>
     </div>
 
     <script>
-        // Lógica de datos exacta del código anterior (con correcciones de ID y Tanita)
+        // Lógica de datos exacta del código anterior
         const EJERCICIOS_MAESTROS = [
             { id: 'm1', n: 'Polea Alta (Espalda)', t: 'bm450', w: 15, active: true },
             { id: 'm2', n: 'Press Pecho Sentado', t: 'bm450', w: 20, active: true },
@@ -255,18 +240,16 @@
             const cont = document.getElementById('mision-container');
             let pool = myTools.filter(t => t.active !== false);
             if (pool.length === 0) {
-                cont.innerHTML = `<p class="text-[9px] text-center text-gray-500 uppercase font-black italic w-full py-6">Sin ejercicios en base de datos</p>`;
+                cont.innerHTML = `<p class="text-[9px] text-center text-gray-500 uppercase font-black italic">Sin ejercicios en base de datos</p>`;
                 return;
             }
 
             let html = '';
-            // Mezcla aleatoria priorizando variedad
             [...pool].sort(() => 0.5 - Math.random()).slice(0, 3).forEach(t => {
                 const plan = calcularPlan(t);
-                const color = t.t === 'calistenia' ? 'border-blue-500' : (t.t === 'cardio' ? 'border-orange-500' : 'border-strava');
                 const badge = t.t === 'bm450' ? 'BM 450' : (t.t === 'calistenia' ? 'BODY' : 'EXTRA');
                 html += `
-                    <div class="strava-card py-4 flex justify-between items-center border-l-4 ${color} bg-[#1a1a1e] w-full box-border">
+                    <div class="strava-card py-4 flex justify-between items-center border-l-4 border-strava bg-[#1a1a1e]">
                         <div>
                             <span class="text-[8px] bg-strava text-white px-2 py-0.5 rounded font-black mb-2 inline-block">${badge}</span>
                             <h3 class="font-black text-sm uppercase italic text-white">${t.n}</h3>
@@ -282,10 +265,10 @@
         }
 
         function addDisc() {
-            const wVal = parseFloat(document.getElementById('dw').value);
-            const qVal = parseInt(document.getElementById('dq').value);
-            if(!isNaN(wVal) && !isNaN(qVal) && wVal > 0 && qVal > 0) {
-                myDiscs.push({w: wVal, q: qVal});
+            const w = parseFloat(document.getElementById('dw').value);
+            const q = parseInt(document.getElementById('dq').value);
+            if(w && q) {
+                myDiscs.push({w, q});
                 localStorage.setItem('myDiscsV29', JSON.stringify(myDiscs));
                 document.getElementById('dw').value = ''; document.getElementById('dq').value = '';
                 renderDiscs(); generarMision();
@@ -295,7 +278,7 @@
         function renderDiscs() {
             const cont = document.getElementById('lista-discos'); cont.innerHTML = '';
             myDiscs.forEach((d, i) => { 
-                cont.innerHTML += `<div class="bg-strava/10 border border-strava/20 px-3 py-2 rounded text-[10px] font-black uppercase flex gap-2 items-center italic">${d.q}x ${d.w}kg <button onclick="removeDisc(${i})" class="text-strava font-bold px-1 hover:text-white transition-colors">✕</button></div>`; 
+                cont.innerHTML += `<div class="bg-strava/10 border border-strava/20 px-3 py-2 rounded text-[10px] font-black uppercase flex gap-2 items-center italic">${d.q}x ${d.w}kg <button onclick="removeDisc(${i})" class="text-strava font-bold">✕</button></div>`; 
             });
         }
 
@@ -318,8 +301,6 @@
                 }, 1000);
             } else {
                 clearInterval(crono); running = false;
-                document.getElementById('btn-start').innerText = "Iniciar Actividad";
-                document.getElementById('btn-start').classList.remove('bg-black', 'border', 'border-strava', 'text-strava');
                 document.getElementById('resumen-sesion').innerText = `HAS COMPLETADO EL ENTRENAMIENTO • ${Math.round(totalKcal)} KCAL`;
                 document.getElementById('feedback-modal').style.display = 'flex';
             }
@@ -327,7 +308,7 @@
 
         function saveFeedback(f) {
             localStorage.setItem('intensityFactor', f);
-            history.push({ date: new Date().toDateString(), kcal: totalKcal, time: seg });
+            history.push({ date: new Date().toDateString(), kcal: totalKcal });
             localStorage.setItem('trainingHistory', JSON.stringify(history));
             location.reload();
         }
@@ -336,8 +317,7 @@
             if(!running) return;
             pausado = !pausado;
             document.getElementById('btn-pause').innerText = pausado ? "REANUDAR" : "PAUSA";
-            document.getElementById('btn-pause').classList.toggle('bg-strava');
-            document.getElementById('btn-pause').classList.toggle('text-white');
+            document.getElementById('btn-pause').classList.toggle('text-strava');
         }
 
         function updateDisp() {
@@ -350,26 +330,22 @@
             const t = document.getElementById('tt').value;
             const w = parseFloat(document.getElementById('tw').value) || 0;
             if(n) {
-                // Corrección ID único
                 myTools.push({id: 'u'+Date.now(), n, t, w, active: true});
                 localStorage.setItem('myToolsV30', JSON.stringify(myTools));
                 renderTools(); generarMision();
                 document.getElementById('tn').value = '';
-                document.getElementById('tt').value = 'fuerza';
-                document.getElementById('tw').value = '';
             }
         }
 
         function renderTools() {
             const cont = document.getElementById('lista-herramientas'); cont.innerHTML = '';
             myTools.forEach((t) => {
-                const toolId = t.id; // Corrección ID
-                cont.innerHTML += `<div class="flex justify-between items-center bg-white/5 p-4 rounded mb-1 border border-white/5 w-full box-border">
-                    <div class="flex items-center gap-3 flex-1 truncate">
-                        <input type="checkbox" ${t.active?'checked':''} onchange="toggleStatus('${toolId}')" class="accent-strava w-4 h-4 flex-shrink-0">
-                        <span class="text-[11px] font-black uppercase italic text-white truncate">${t.n}</span>
+                cont.innerHTML += `<div class="flex justify-between items-center bg-white/5 p-4 rounded mb-1">
+                    <div class="flex items-center gap-3">
+                        <input type="checkbox" ${t.active?'checked':''} onchange="toggleStatus('${t.id}')" class="accent-strava w-4 h-4">
+                        <span class="text-[11px] font-black uppercase italic">${t.n}</span>
                     </div>
-                    <button onclick="deleteTool('${toolId}')" class="text-strava font-bold px-2 flex-shrink-0 hover:text-white transition-colors">✕</button>
+                    <button onclick="deleteTool('${t.id}')" class="text-strava font-bold px-2">✕</button>
                 </div>`;
             });
         }
@@ -389,16 +365,13 @@
             bodyComp.grasa = parseFloat(document.getElementById('tan-g').value) || bodyComp.grasa;
             bodyComp.musculo = parseFloat(document.getElementById('tan-m').value) || bodyComp.musculo;
             localStorage.setItem('bodyComp', JSON.stringify(bodyComp));
-            generarMision();
-            toggleDrawer('drawer-tanita');
+            location.reload();
         }
 
         window.onload = () => { 
-            // Cargar datos de Tanita en inputs
             document.getElementById('tan-p').value = bodyComp.peso;
             document.getElementById('tan-g').value = bodyComp.grasa;
             document.getElementById('tan-m').value = bodyComp.musculo;
-            
             renderDiscs(); renderTools(); generarMision();
         };
     </script>
