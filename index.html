@@ -1,230 +1,68 @@
-m<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Apple Coach V29 - Multidisciplinar</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <style>
-        body { background-color: #000; color: #fff; font-family: -apple-system, sans-serif; }
-        .apple-card { background: #1c1c1e; border-radius: 20px; padding: 20px; margin-bottom: 12px; border: 1px solid #2c2c2e; }
-        .text-apple-green { color: #30d158; }
-        .bg-apple-green { background-color: #30d158; }
-        .drawer { max-height: 0; overflow: hidden; transition: max-height 0.5s ease; }
-        .drawer-open { max-height: 3000px; padding-bottom: 20px; }
-        .timer-font { font-variant-numeric: tabular-nums; font-weight: 200; letter-spacing: -2px; }
-    </style>
-</head>
-<body class="p-4 pb-32 text-white">
+// --- MEJORA: MOTOR DE REPETICIONES ADAPTATIVAS (DINÁMICO) ---
+function calcularRepsDinamicas(tool) {
+    const racha = history.length; // Días entrenados seguidos
+    let baseReps = 0;
+    let modificadorFatiga = racha > 2 ? -2 : 0; // Si llevas +2 días, baja el volumen para evitar lesión
 
-    <div class="flex justify-between items-center mb-6 px-2">
-        <h1 class="text-xl font-black italic tracking-tighter uppercase">APPLE COACH <span class="text-apple-green">V29</span></h1>
-        <div class="flex gap-2">
-            <button onclick="document.getElementById('drawer-tanita').classList.toggle('drawer-open')" class="w-10 h-10 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-lg">⚖️</button>
-            <button onclick="document.getElementById('equip-drawer').classList.toggle('drawer-open')" class="w-10 h-10 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-lg">⚙️</button>
-        </div>
-    </div>
+    if (tool.t === 'fuerza') {
+        // Lógica de intensidad: Si el peso base es alto respecto a tu masa, baja reps
+        const ratioIntensidad = tool.w / (bodyComp.musculo || 35);
+        baseReps = ratioIntensidad > 1.5 ? 6 : 10; 
+        
+        const finalReps = baseReps + modificadorFatiga;
+        return `${finalReps} - ${finalReps + 2} Reps (Alta Carga)`;
+    } 
+    
+    if (tool.t === 'calistenia') {
+        // En calistenia buscamos volumen. Si estás fresco (racha 0), te pedirá más.
+        baseReps = 15 - (racha * 1); 
+        return `${Math.max(baseReps, 10)} - ${Math.max(baseReps + 4, 14)} Reps`;
+    }
 
-    <div id="coach-layer" class="mb-6">
-        <div class="flex justify-between items-center mb-4 ml-2">
-            <div>
-                <p id="coach-status" class="text-[9px] text-apple-green font-black uppercase tracking-widest italic">Personal Trainer</p>
-                <h2 id="coach-goal" class="text-sm font-bold uppercase italic text-gray-400 tracking-tighter">Planificación basada en evidencia</h2>
-            </div>
-            <button onclick="generarMision()" class="bg-white/5 px-3 py-1 rounded-full text-[8px] font-black text-gray-500 uppercase border border-white/5">🔄 Recalcular</button>
-        </div>
-        <div id="mision-container" class="space-y-3">
-            </div>
-    </div>
+    if (tool.t === 'cardio') {
+        // El cardio se ajusta por tiempo dinámico según tu % de grasa
+        const tiempoBase = bodyComp.grasa > 20 ? 45 : 30;
+        return `${tiempoBase} min (Zona Quemagrasa)`;
+    }
 
-    <div class="apple-card border-l-4 border-red-600">
-        <div class="flex justify-between items-center mb-4 text-center">
-            <div id="display" class="text-6xl timer-font italic">00:00</div>
-            <div class="text-right">
-                <span id="bpm-val" class="text-3xl font-bold text-red-500 tracking-tighter">--</span>
-                <p class="text-[8px] font-black text-gray-500 uppercase tracking-widest">BPM</p>
-            </div>
-        </div>
-        <div class="flex gap-2">
-            <button onclick="toggleEntreno()" id="btn-start" class="bg-apple-green text-black p-4 rounded-2xl text-[10px] font-black uppercase flex-[2] italic">Iniciar Sesión</button>
-            <button onclick="pausarEntreno()" id="btn-pause" class="bg-white/5 text-white p-4 rounded-2xl text-[10px] font-black uppercase flex-1 border border-white/5">Pausa</button>
-        </div>
-    </div>
+    return "12 Reps";
+}
 
-    <div id="drawer-tanita" class="drawer">
-        <div class="apple-card bg-black border-apple-green/30">
-            <p class="text-[9px] font-black text-apple-green uppercase mb-4">Métricas Tanita</p>
-            <div class="grid grid-cols-3 gap-2">
-                <input type="number" id="tan-p" class="bg-[#1c1c1e] p-3 rounded-xl text-xs text-center border border-white/5" placeholder="Peso">
-                <input type="number" id="tan-g" class="bg-[#1c1c1e] p-3 rounded-xl text-xs text-center border border-white/5" placeholder="%Grasa">
-                <input type="number" id="tan-m" class="bg-[#1c1c1e] p-3 rounded-xl text-xs text-center border border-white/5" placeholder="Músculo">
-            </div>
-            <button onclick="saveTanita()" class="w-full mt-4 bg-apple-green text-black py-4 rounded-xl font-black text-[10px] uppercase italic">Actualizar Coach</button>
-        </div>
-    </div>
+// --- ACTUALIZACIÓN DE LA CAPA VISUAL (SIN TOCAR LA BASE V29) ---
+function generarMision() {
+    const container = document.getElementById('mision-container');
+    const goalText = document.getElementById('coach-goal');
+    container.innerHTML = '';
 
-    <div id="equip-drawer" class="drawer">
-        <div class="apple-card bg-black">
-            <p class="text-[9px] font-black text-gray-400 uppercase mb-4">Añadir/Gestionar Herramientas</p>
-            <input type="text" id="tn" class="w-full bg-[#1c1c1e] p-3 rounded-xl text-xs mb-2 border border-white/5" placeholder="Nombre (Ej: Press Banca)">
-            <div class="flex gap-2 mb-4">
-                <select id="tt" class="flex-1 bg-[#1c1c1e] p-3 rounded-xl text-xs text-gray-400 border border-white/5">
-                    <option value="fuerza">Fuerza (Discos)</option>
-                    <option value="calistenia">Calistenia (Cuerpo)</option>
-                    <option value="cardio">Cardio (Tiempo)</option>
-                </select>
-                <input type="number" id="tw" class="flex-1 bg-[#1c1c1e] p-3 rounded-xl text-xs border border-white/5" placeholder="Peso Base">
-            </div>
-            <button onclick="addTool()" class="w-full bg-apple-green text-black py-3 rounded-xl font-black text-xs uppercase italic mb-4">Añadir a Base V29</button>
-            <div id="lista-herramientas" class="space-y-1"></div>
-        </div>
-    </div>
+    let poolActivo = myTools.filter(t => t.active !== false);
+    if (poolActivo.length === 0) return;
 
-    <script>
-        let myTools = JSON.parse(localStorage.getItem('myToolsV29')) || [];
-        let bodyComp = JSON.parse(localStorage.getItem('bodyComp')) || { peso: 75, grasa: 18, musculo: 34 };
-        let history = JSON.parse(localStorage.getItem('trainingHistory')) || [];
-        let seg=0, crono=null, running=false, pausado=false;
+    // ... (Lógica de selección multidisciplinar de la base anterior) ...
 
-        function init() {
-            renderTools();
-            generarMision();
-        }
+    seleccion.forEach(t => {
+        let badgeColor = t.t === 'calistenia' ? "border-blue-500" : (t.t === 'cardio' ? "border-orange-500" : "border-apple-green");
+        
+        // LLAMADA AL NUEVO MOTOR DINÁMICO
+        const repsDinamicas = calcularRepsDinamicas(t);
 
-        // --- EL NUEVO MOTOR DINÁMICO MULTIDISCIPLINAR ---
-        function generarMision() {
-            const container = document.getElementById('mision-container');
-            const goalText = document.getElementById('coach-goal');
-            container.innerHTML = '';
-
-            // 1. Solo ejercicios "Activados" por el usuario
-            let poolActivo = myTools.filter(t => t.active !== false);
-
-            if (poolActivo.length === 0) {
-                container.innerHTML = `<p class="text-center text-[10px] text-gray-600 p-8 uppercase font-bold">Activa ejercicios en Configuración para que el Coach los vea.</p>`;
-                return;
-            }
-
-            // 2. Lógica Científica: Reparto según Tanita
-            // Si grasa > 20, priorizamos mezcla metabólica. Si no, priorizamos fuerza.
-            let seleccion = [];
-            
-            if (bodyComp.grasa > 20) {
-                goalText.innerText = "Objetivo: Recomposición Metabólica";
-                // Intenta meter 1 Cardio, 1 Calistenia y 1 Fuerza si están disponibles
-                let f = poolActivo.filter(t => t.t === 'fuerza');
-                let c = poolActivo.filter(t => t.t === 'calistenia');
-                let r = poolActivo.filter(t => t.t === 'cardio');
-                
-                if (r.length > 0) seleccion.push(r[Math.floor(Math.random()*r.length)]);
-                if (c.length > 0) seleccion.push(c[Math.floor(Math.random()*c.length)]);
-                if (f.length > 0) seleccion.push(f[Math.floor(Math.random()*f.length)]);
-            } else {
-                goalText.innerText = "Objetivo: Hipertrofia y Fuerza";
-                // Prioriza Fuerza pero mete variedad
-                let f = poolActivo.filter(t => t.t === 'fuerza').sort(() => 0.5 - Math.random());
-                seleccion = f.slice(0, 3);
-            }
-
-            // Fallback si la selección es vacía o corta: rellenar con lo que haya activo
-            if (seleccion.length < 3) {
-                let extras = poolActivo.filter(t => !seleccion.includes(t));
-                seleccion = [...seleccion, ...extras.slice(0, 3 - seleccion.length)];
-            }
-
-            seleccion.forEach(t => {
-                let badgeColor = "border-apple-green";
-                let icon = "🏋️";
-                if(t.t === 'calistenia') { badgeColor = "border-blue-500"; icon = "🤸"; }
-                if(t.t === 'cardio') { badgeColor = "border-orange-500"; icon = "🏃"; }
-
-                container.innerHTML += `
-                    <div class="apple-card border-l-4 ${badgeColor} py-5 flex justify-between items-center bg-white/[0.02]">
-                        <div class="flex items-center gap-4">
-                            <span class="text-xl">${icon}</span>
-                            <div>
-                                <h3 class="font-black text-xs uppercase italic">${t.n}</h3>
-                                <p class="text-[9px] text-gray-500 font-black uppercase">${t.t} | ${t.t==='fuerza' ? t.w+'kg' : (t.t==='cardio' ? '40 min' : 'Peso Cuerpo')}</p>
-                            </div>
-                        </div>
-                        <div class="text-right pr-2">
-                            <span class="text-[10px] font-black italic text-apple-green">SIGUIENTE</span>
-                        </div>
-                    </div>`;
-            });
-        }
-
-        // --- FUNCIONES V29 RESTAURADAS ---
-        function addTool() {
-            const n = document.getElementById('tn').value;
-            const t = document.getElementById('tt').value;
-            const w = parseFloat(document.getElementById('tw').value || 0);
-            if(n) { 
-                myTools.push({id: Date.now(), n, t, w, active: true}); 
-                localStorage.setItem('myToolsV29', JSON.stringify(myTools)); 
-                renderTools(); generarMision();
-            }
-        }
-
-        function renderTools() {
-            const cont = document.getElementById('lista-herramientas'); cont.innerHTML = '';
-            myTools.forEach(t => {
-                cont.innerHTML += `
-                    <div class="flex justify-between items-center bg-white/5 p-3 rounded-xl border border-white/[0.03]">
-                        <div class="flex items-center gap-3">
-                            <input type="checkbox" ${t.active!==false?'checked':''} onchange="toggleToolStatus(${t.id})" class="w-4 h-4 accent-apple-green bg-black border-white/20 rounded">
-                            <span class="text-[10px] uppercase font-bold">${t.n} <span class="text-[8px] text-gray-500 ml-1">(${t.t})</span></span>
-                        </div>
-                        <button onclick="deleteTool(${t.id})" class="text-red-500 text-xs font-bold px-2">✕</button>
-                    </div>`;
-            });
-        }
-
-        function toggleToolStatus(id) {
-            const tool = myTools.find(t => t.id === id);
-            tool.active = !tool.active;
-            localStorage.setItem('myToolsV29', JSON.stringify(myTools));
-            generarMision();
-        }
-
-        function saveTanita() {
-            bodyComp.peso = document.getElementById('tan-p').value;
-            bodyComp.grasa = document.getElementById('tan-g').value;
-            bodyComp.musculo = document.getElementById('tan-m').value;
-            localStorage.setItem('bodyComp', JSON.stringify(bodyComp));
-            generarMision();
-            document.getElementById('drawer-tanita').classList.remove('drawer-open');
-        }
-
-        function toggleEntreno() {
-            if(!running) {
-                running = true; pausado = false;
-                document.getElementById('btn-start').innerText = "FINALIZAR";
-                document.getElementById('btn-start').classList.replace('bg-apple-green', 'bg-red-600');
-                crono = setInterval(() => { if(!pausado) { seg++; updateDisp(); } }, 1000);
-            } else {
-                clearInterval(crono);
-                history.push(new Date().toDateString());
-                localStorage.setItem('trainingHistory', JSON.stringify(history));
-                location.reload();
-            }
-        }
-
-        function pausarEntreno() {
-            pausado = !pausado;
-            document.getElementById('btn-pause').innerText = pausado ? "REANUDAR" : "PAUSA";
-            document.getElementById('btn-pause').classList.toggle('bg-apple-green');
-            document.getElementById('btn-pause').classList.toggle('text-black');
-        }
-
-        function updateDisp() {
-            let m=Math.floor(seg/60), s=seg%60;
-            document.getElementById('display').innerText = `${m}:${s.toString().padStart(2,'0')}`;
-        }
-
-        function deleteTool(id) { myTools = myTools.filter(t => t.id !== id); localStorage.setItem('myToolsV29', JSON.stringify(myTools)); renderTools(); generarMision(); }
-
-        window.onload = init;
-    </script>
-</body>
-</html>
+        container.innerHTML += `
+            <div class="apple-card border-l-4 ${badgeColor} py-5 flex justify-between items-center bg-white/[0.02]">
+                <div class="flex items-center gap-4">
+                    <div class="text-xs font-black bg-white/5 w-8 h-8 rounded-full flex items-center justify-center">
+                        ${t.t === 'fuerza' ? 'F' : (t.t === 'cardio' ? 'C' : 'K')}
+                    </div>
+                    <div>
+                        <h3 class="font-black text-xs uppercase italic">${t.n}</h3>
+                        <p class="text-[8px] text-gray-500 font-black uppercase">
+                            Base: ${t.w}kg | Historial: ${history.length}d activo
+                        </p>
+                    </div>
+                </div>
+                <div class="text-right pr-2">
+                    <p class="text-[13px] font-black italic text-apple-green tracking-tighter">${repsDinamicas}</p>
+                    <p class="text-[7px] text-gray-600 font-black uppercase">Cálculo Coach</p>
+                </div>
+            </div>`;
+    });
+}
+p
