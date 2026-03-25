@@ -3,11 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>APPLE COACH V30 - Aesthetic Adjustment</title>
+    <title>APPLE COACH V30 - Original Logic + CSS Fix</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         body { background-color: #000; color: #fff; font-family: -apple-system, sans-serif; -webkit-tap-highlight-color: transparent; }
-        .apple-card { background: #1c1c1e; border-radius: 24px; padding: 20px; margin-bottom: 12px; border: 1px solid #2c2c2e; width: 100%; box-sizing: border-box; }
+        .apple-card { background: #1c1c1e; border-radius: 24px; padding: 20px; margin-bottom: 12px; border: 1px solid #2c2c2e; }
         .text-apple-green { color: #30d158; }
         .bg-apple-green { background-color: #30d158; }
         .drawer { max-height: 0; overflow: hidden; transition: max-height 0.5s ease-in-out; }
@@ -18,11 +18,8 @@
         @keyframes pulse-red { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
         #mision-container { min-height: 50px; display: block !important; opacity: 1 !important; }
         
-        /* AJUSTE ESTÉTICO EXCLUSIVO: Previene el desbordamiento horizontal en inputs */
-        input[type="number"], select, input[type="text"] {
-            width: 100%;
-            box-sizing: border-box !important;
-        }
+        /* ÚNICO CAMBIO ESTÉTICO: Forzar que los inputs no empujen el borde de la tarjeta */
+        .input-ajustado { width: 100% !important; box-sizing: border-box !important; }
     </style>
 </head>
 <body class="p-4 pb-32">
@@ -44,7 +41,7 @@
             <h1 class="text-xl font-black italic tracking-tighter uppercase">APPLE COACH <span class="text-apple-green">V30</span></h1>
             <p class="text-[8px] text-gray-500 font-black uppercase tracking-widest italic">Inteligencia BM 450 + Polar H10</p>
         </div>
-        <div class="flex gap-2 text-white">
+        <div class="flex gap-2">
             <button onclick="toggleDrawer('drawer-tanita')" class="w-10 h-10 rounded-full bg-white/5 border border-white/10 flex items-center justify-center">⚖️</button>
             <button onclick="toggleDrawer('equip-drawer')" class="w-10 h-10 rounded-full bg-white/5 border border-white/10 flex items-center justify-center">⚙️</button>
         </div>
@@ -63,14 +60,14 @@
             </div>
             <div class="text-right flex flex-col items-end">
                 <div class="flex items-center gap-2">
-                    <span id="bpm-val" class="text-4xl font-bold text-red-500 tracking-tighter text-white">--</span>
+                    <span id="bpm-val" class="text-4xl font-bold text-red-500 tracking-tighter">--</span>
                     <button onclick="connectPolar()" id="polar-btn" class="text-xl">❤️</button>
                 </div>
                 <p id="polar-status" class="text-[7px] font-black text-gray-500 uppercase tracking-tighter">Polar Desconectada</p>
             </div>
         </div>
         <div class="flex gap-2">
-            <button onclick="toggleEntreno()" id="btn-start" class="bg-apple-green text-black p-4 rounded-2xl text-[10px] font-black uppercase flex-[2] italic">Iniciar</button>
+            <button onclick="toggleEntreno()" id="btn-start" class="bg-apple-green text-black p-4 rounded-2xl text-[10px] font-black uppercase flex-[2] italic text-white">Iniciar</button>
             <button onclick="pausarEntreno()" id="btn-pause" class="bg-white/5 text-white p-4 rounded-2xl text-[10px] font-black uppercase flex-1 border border-white/5">Pausa</button>
         </div>
     </div>
@@ -79,9 +76,9 @@
         <div class="apple-card bg-black border-apple-green/30">
             <p class="text-[9px] font-black text-apple-green uppercase mb-4 italic">Tanita</p>
             <div class="grid grid-cols-3 gap-2">
-                <input type="number" id="tan-p" class="bg-[#1c1c1e] p-3 rounded-xl text-xs text-center border border-white/5 text-white" placeholder="Peso">
-                <input type="number" id="tan-g" class="bg-[#1c1c1e] p-3 rounded-xl text-xs text-center border border-white/5 text-white" placeholder="%G">
-                <input type="number" id="tan-m" class="bg-[#1c1c1e] p-3 rounded-xl text-xs text-center border border-white/5 text-white" placeholder="Musc">
+                <input type="number" id="tan-p" class="bg-[#1c1c1e] p-3 rounded-xl text-xs text-center border border-white/5" placeholder="Peso">
+                <input type="number" id="tan-g" class="bg-[#1c1c1e] p-3 rounded-xl text-xs text-center border border-white/5" placeholder="%G">
+                <input type="number" id="tan-m" class="bg-[#1c1c1e] p-3 rounded-xl text-xs text-center border border-white/5" placeholder="Musc">
             </div>
             <button onclick="saveTanita()" class="w-full mt-4 bg-apple-green text-black py-4 rounded-xl font-black text-[10px] uppercase italic text-white">Actualizar</button>
         </div>
@@ -91,8 +88,224 @@
         <div class="apple-card bg-black mb-2 border border-white/5">
             <p class="text-[9px] font-black text-gray-400 uppercase mb-3 italic">Mis Discos (Físicos)</p>
             <div class="flex flex-col gap-3">
-                <div class="flex gap-2 w-full text-white">
-                    <input type="number" id="dw" class="flex-1 bg-[#1c1c1e] p-4 rounded-xl text-xs border border-white/10 text-white" placeholder="Kg">
-                    <input type="number" id="dq" class="flex-1 bg-[#1c1c1e] p-4 rounded-xl text-xs border border-white/10 text-white" placeholder="Cant.">
+                <div class="flex gap-2">
+                    <input type="number" id="dw" class="flex-1 bg-[#1c1c1e] p-4 rounded-xl text-xs border border-white/10 input-ajustado" placeholder="Kg">
+                    <input type="number" id="dq" class="flex-1 bg-[#1c1c1e] p-4 rounded-xl text-xs border border-white/10 input-ajustado" placeholder="Cant.">
                 </div>
-                
+                <button onclick="addDisc()" class="w-full bg-white/10 text-white p-3 rounded-xl text-[10px] font-black uppercase italic border border-white/5">Añadir al Inventario</button>
+            </div>
+            <div id="lista-discos" class="flex flex-wrap gap-2 mt-4"></div>
+        </div>
+
+        <div class="apple-card bg-black">
+            <p class="text-[9px] font-black text-gray-400 uppercase mb-4 italic">Herramientas Personalizadas</p>
+            <input type="text" id="tn" class="w-full bg-[#1c1c1e] p-3 rounded-xl text-xs mb-2 border border-white/5" placeholder="Nombre">
+            <div class="flex gap-2 mb-4">
+                <select id="tt" class="flex-1 bg-[#1c1c1e] p-3 rounded-xl text-xs text-gray-400">
+                    <option value="fuerza">Fuerza</option>
+                    <option value="calistenia">Calistenia</option>
+                    <option value="cardio">Cardio</option>
+                </select>
+                <input type="number" id="tw" class="flex-1 bg-[#1c1c1e] p-3 rounded-xl text-xs border border-white/5" placeholder="Peso Sug.">
+            </div>
+            <button onclick="addTool()" class="w-full bg-apple-green text-black py-3 rounded-xl font-black text-xs uppercase italic mb-4 text-white">Guardar</button>
+            <div id="lista-herramientas" class="space-y-1"></div>
+        </div>
+    </div>
+
+    <script>
+        const EJERCICIOS_MAESTROS = [
+            { id: 'm1', n: 'Polea Alta (Espalda)', t: 'bm450', w: 15 },
+            { id: 'm2', n: 'Press Pecho Sentado', t: 'bm450', w: 20 },
+            { id: 'm3', n: 'Extension Cuadriceps', t: 'bm450', w: 10 },
+            { id: 'm4', n: 'Contractor Pecho (Aperturas)', t: 'bm450', w: 10 },
+            { id: 'm5', n: 'Biceps Polea Baja', t: 'bm450', w: 5 },
+            { id: 'c1', n: 'Flexiones Diamante', t: 'calistenia', w: 0 },
+            { id: 'c2', n: 'Plancha Abdominal', t: 'calistenia', w: 0 },
+            { id: 'c3', n: 'Zancadas Dinámicas', t: 'calistenia', w: 0 },
+            { id: 'c4', n: 'Sentadilla Búlgara', t: 'calistenia', w: 0 }
+        ];
+
+        let myTools = JSON.parse(localStorage.getItem('myToolsV30')) || EJERCICIOS_MAESTROS;
+        let myDiscs = JSON.parse(localStorage.getItem('myDiscsV29')) || [];
+        let bodyComp = JSON.parse(localStorage.getItem('bodyComp')) || { peso: 75, grasa: 20, musculo: 35 };
+        let history = JSON.parse(localStorage.getItem('trainingHistory')) || [];
+        let intensityFactor = parseFloat(localStorage.getItem('intensityFactor')) || 1.0;
+        
+        let seg=0, crono=null, running=false, pausado=false;
+        let bluetoothDevice, heartRateCharacteristic, currentBPM = 0, totalKcal = 0;
+
+        async function connectPolar() {
+            try {
+                document.getElementById('polar-status').innerText = "Buscando...";
+                bluetoothDevice = await navigator.bluetooth.requestDevice({ filters: [{ services: ['heart_rate'] }] });
+                const server = await bluetoothDevice.gatt.connect();
+                const service = await server.getPrimaryService('heart_rate');
+                heartRateCharacteristic = await service.getCharacteristic('heart_rate_measurement');
+                await heartRateCharacteristic.startNotifications();
+                heartRateCharacteristic.addEventListener('characteristicvaluechanged', (e) => {
+                    currentBPM = e.target.value.getUint8(1);
+                    document.getElementById('bpm-val').innerText = currentBPM;
+                    document.getElementById('bpm-val').classList.add('pulse');
+                });
+                document.getElementById('polar-status').innerText = "H10 Conectada";
+                document.getElementById('polar-status').classList.replace('text-gray-500', 'text-apple-green');
+            } catch (error) { document.getElementById('polar-status').innerText = "Error"; }
+        }
+
+        function calculateKcal() {
+            if (currentBPM > 40 && running && !pausado) {
+                let genderFactor = -55.0969; 
+                let bpmCalc = (currentBPM * 0.6309);
+                let weightCalc = (bodyComp.peso * 0.1988);
+                let ageCalc = (40 * 0.2017); 
+                let total = (bpmCalc + weightCalc + ageCalc + genderFactor) / 4.184 / 60; 
+                totalKcal += Math.max(0, total);
+                document.getElementById('kcal-val').innerText = Math.round(totalKcal);
+            }
+        }
+
+        function toggleDrawer(id) { document.getElementById(id).classList.toggle('drawer-open'); }
+
+        function getCapacidadMaxima() { return myDiscs.reduce((acc, d) => acc + (parseFloat(d.w) * parseInt(d.q)), 0); }
+
+        function calcularPlan(tool) {
+            const maxFisico = getCapacidadMaxima();
+            let repsExtra = 0, pesoFinal = tool.w;
+            if ((tool.t === 'fuerza' || tool.t === 'bm450') && tool.w > 0) {
+                if (tool.w > maxFisico) { pesoFinal = maxFisico; repsExtra = Math.round((tool.w - maxFisico) * 0.6); }
+                const ratio = pesoFinal / (bodyComp.musculo || 35);
+                let final = Math.round(((ratio > 1.2 ? 6 : 10) + repsExtra) / intensityFactor);
+                return { reps: `${final}-${final+2} Reps`, carga: `${pesoFinal}kg` };
+            }
+            if (tool.t === 'calistenia') {
+                let final = Math.round((12 + (bodyComp.musculo / 10) - (bodyComp.grasa / 5)) / intensityFactor);
+                return { reps: `${final}-${final+4} Reps`, carga: "Peso Corporal" };
+            }
+            if (tool.t === 'cardio') {
+                let final = Math.round((bodyComp.grasa > 20 ? 35 : 20) / intensityFactor);
+                return { reps: `${final} Min`, carga: "Cardio" };
+            }
+            return { reps: "12 Reps", carga: "General" };
+        }
+
+        function generarMision() {
+            const cont = document.getElementById('mision-container');
+            let pool = myTools.filter(t => t.active !== false);
+            if (pool.length === 0) {
+                cont.innerHTML = `<p class="text-[8px] text-center text-gray-600 uppercase italic">Añade herramientas o restaura la memoria</p>`;
+                return;
+            }
+            let htmlContent = '';
+            pool.sort(() => 0.5 - Math.random()).slice(0, 3).forEach(t => {
+                const plan = calcularPlan(t);
+                const color = t.t === 'calistenia' ? 'border-blue-500' : (t.t === 'cardio' ? 'border-orange-500' : 'border-apple-green');
+                const badge = t.t === 'bm450' ? 'BM 450' : (t.t === 'calistenia' ? 'CASA' : 'EXTRA');
+                htmlContent += `
+                    <div class="apple-card border-l-4 ${color} py-6 flex justify-between items-center bg-white/[0.02]">
+                        <div>
+                            <span class="text-[6px] bg-white/10 px-2 py-0.5 rounded-full font-black text-gray-400 mb-1 inline-block uppercase tracking-tighter">${badge}</span>
+                            <h3 class="font-black text-sm uppercase italic text-white">${t.n}</h3>
+                            <p class="text-[8px] text-gray-500 font-bold uppercase mt-1 italic">${plan.carga}</p>
+                        </div>
+                        <div class="text-right">
+                            <p class="text-[14px] font-black italic text-apple-green">${plan.reps}</p>
+                            <p class="text-[6px] text-gray-600 font-bold uppercase">${t.t==='cardio'?'Tiempo':'Esfuerzo'}</p>
+                        </div>
+                    </div>`;
+            });
+            cont.innerHTML = htmlContent;
+        }
+
+        function addDisc() {
+            const wVal = parseFloat(document.getElementById('dw').value);
+            const qVal = parseInt(document.getElementById('dq').value);
+            if(!isNaN(wVal) && !isNaN(qVal)) {
+                myDiscs.push({w: wVal, q: qVal});
+                localStorage.setItem('myDiscsV29', JSON.stringify(myDiscs));
+                document.getElementById('dw').value = ''; document.getElementById('dq').value = '';
+                renderDiscs(); generarMision();
+            }
+        }
+
+        function renderDiscs() {
+            const cont = document.getElementById('lista-discos');
+            cont.innerHTML = '';
+            myDiscs.forEach((d, index) => { 
+                cont.innerHTML += `<div class="bg-white/5 border border-white/10 px-3 py-2 rounded-xl text-[10px] font-black uppercase flex gap-2 items-center text-white italic">${d.q}x ${d.w}kg <button onclick="removeDisc(${index})" class="text-red-500 font-bold ml-1 px-1">✕</button></div>`; 
+            });
+        }
+
+        function removeDisc(index) {
+            myDiscs.splice(index, 1);
+            localStorage.setItem('myDiscsV29', JSON.stringify(myDiscs));
+            renderDiscs(); generarMision();
+        }
+
+        function toggleEntreno() {
+            if(!running) {
+                running = true; pausado = false; totalKcal = 0;
+                document.getElementById('btn-start').innerText = "FINALIZAR";
+                document.getElementById('btn-start').classList.replace('bg-apple-green', 'bg-red-600');
+                crono = setInterval(() => { if(!pausado) { seg++; updateDisp(); if(seg % 2 === 0) calculateKcal(); } }, 1000);
+            } else {
+                clearInterval(crono);
+                document.getElementById('resumen-sesion').innerText = `HAS QUEMADO UNAS ${Math.round(totalKcal)} KCAL`;
+                document.getElementById('feedback-modal').style.display = 'flex';
+            }
+        }
+
+        function saveFeedback(factor) {
+            localStorage.setItem('intensityFactor', factor);
+            history.push({ date: new Date().toDateString(), kcal: totalKcal });
+            localStorage.setItem('trainingHistory', JSON.stringify(history));
+            location.reload();
+        }
+
+        function pausarEntreno() {
+            pausado = !pausado;
+            document.getElementById('btn-pause').innerText = pausado ? "REANUDAR" : "PAUSA";
+            document.getElementById('btn-pause').classList.toggle('bg-apple-green');
+            document.getElementById('btn-pause').classList.toggle('text-black');
+        }
+
+        function updateDisp() {
+            let m=Math.floor(seg/60), s=seg%60;
+            document.getElementById('display').innerText = `${m}:${s.toString().padStart(2,'0')}`;
+        }
+
+        function addTool() {
+            const n = document.getElementById('tn').value, t = document.getElementById('tt').value, w = document.getElementById('tw').value || 0;
+            if(n) { myTools.push({id: Date.now(), n, t, w: parseFloat(w), active: true}); localStorage.setItem('myToolsV30', JSON.stringify(myTools)); renderTools(); generarMision(); }
+        }
+
+        function renderTools() {
+            const cont = document.getElementById('lista-herramientas'); cont.innerHTML = '';
+            myTools.forEach((t, idx) => {
+                cont.innerHTML += `<div class="flex justify-between items-center bg-white/5 p-4 rounded-xl mb-1 border border-white/5"><div class="flex items-center gap-3"><input type="checkbox" ${t.active!==false?'checked':''} onchange="toggleStatus('${t.id || idx}')" class="accent-apple-green w-4 h-4"><span class="text-[10px] font-bold uppercase italic text-white">${t.n}</span></div><button onclick="deleteTool('${t.id || idx}')" class="text-red-500 text-xs font-bold px-2">✕</button></div>`;
+            });
+        }
+
+        function toggleStatus(id) {
+            const tool = myTools.find(t => (t.id || myTools.indexOf(t).toString()) === id.toString());
+            if(tool) tool.active = !tool.active;
+            localStorage.setItem('myToolsV30', JSON.stringify(myTools)); generarMision();
+        }
+
+        function deleteTool(id) {
+            myTools = myTools.filter(t => (t.id || myTools.indexOf(t).toString()) !== id.toString());
+            localStorage.setItem('myToolsV30', JSON.stringify(myTools)); renderTools(); generarMision();
+        }
+
+        function saveTanita() {
+            bodyComp.peso = document.getElementById('tan-p').value;
+            bodyComp.grasa = document.getElementById('tan-g').value;
+            bodyComp.musculo = document.getElementById('tan-m').value;
+            localStorage.setItem('bodyComp', JSON.stringify(bodyComp));
+            location.reload();
+        }
+
+        window.onload = () => { renderDiscs(); renderTools(); setTimeout(generarMision, 150); };
+    </script>
+</body>
+</html>
