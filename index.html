@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Apple Coach V23 - Carga en Kg</title>
+    <title>Apple Coach V24 - Fix Crono</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         body { background-color: #000; color: #fff; font-family: -apple-system, sans-serif; -webkit-tap-highlight-color: transparent; }
@@ -27,9 +27,8 @@
 
     <div id="modal-feedback" class="modal-overlay">
         <div class="w-[90%] max-w-sm text-center">
-            <h2 class="text-2xl font-black mb-2 italic">¿Cómo fue el esfuerzo?</h2>
+            <h2 class="text-2xl font-black mb-2 italic text-white">¿Cómo fue el esfuerzo?</h2>
             <p class="text-[10px] text-gray-500 mb-8 uppercase tracking-widest font-bold">Ajustaremos los kilos para mañana</p>
-            
             <button onclick="procesarFeedback(-4)" class="btn-esfuerzo bg-red-600/20 text-red-500 border border-red-500/30">🥵 AGOTADOR (Bajar 4kg)</button>
             <button onclick="procesarFeedback(-2)" class="btn-esfuerzo bg-orange-600/20 text-orange-500 border border-orange-500/30">🔥 DURO (Bajar 2kg)</button>
             <button onclick="procesarFeedback(0)" class="btn-esfuerzo bg-blue-600/20 text-blue-400 border border-blue-500/30">👍 NORMAL (Mantener kilos)</button>
@@ -54,14 +53,24 @@
         </div>
     </div>
 
+    <div class="apple-card text-center">
+        <div id="display" class="text-7xl timer-font mb-8 italic">00:00</div>
+        <div class="flex gap-4">
+            <button id="btn-pausa" onclick="pausar()" class="w-16 h-16 rounded-full bg-yellow-500/10 flex items-center justify-center opacity-20" disabled>
+                <span id="pause-icon" class="text-yellow-500 text-xl font-bold">||</span>
+            </button>
+            <button id="btn-principal" onclick="toggleEntreno()" class="flex-1 bg-apple-green text-black rounded-2xl font-black text-sm uppercase tracking-widest italic">Iniciar Sesión</button>
+        </div>
+    </div>
+
     <div class="apple-card">
         <button onclick="document.getElementById('equip-drawer').classList.toggle('drawer-open')" class="w-full flex justify-between items-center">
-            <span class="text-[10px] font-black text-gray-500 uppercase tracking-widest italic">Mis Pesos y Herramientas</span>
-            <span class="text-apple-green text-xs font-bold italic">Configurar</span>
+            <span class="text-[10px] font-black text-gray-500 uppercase tracking-widest italic">Pesos e Inventario</span>
+            <span class="text-apple-green text-xs font-bold italic">Gestionar</span>
         </button>
         <div id="equip-drawer" class="drawer">
             <div class="mt-4 p-4 bg-white/5 rounded-2xl mb-4 border border-white/5">
-                <input type="text" id="new-tool-name" class="w-full bg-black border border-white/10 rounded-xl p-3 text-xs mb-2" placeholder="Nombre Herramienta">
+                <input type="text" id="new-tool-name" class="w-full bg-black border border-white/10 rounded-xl p-3 text-xs mb-2" placeholder="Ej: Mancuerna">
                 <div class="grid grid-cols-2 gap-2 mb-2">
                     <select id="new-tool-type" class="bg-black border border-white/10 rounded-xl p-3 text-xs text-gray-400">
                         <option value="fuerza">Fuerza</option>
@@ -75,16 +84,6 @@
         </div>
     </div>
 
-    <div class="apple-card text-center">
-        <div id="display" class="text-7xl timer-font mb-8 italic">00:00</div>
-        <div class="flex gap-4">
-            <button id="btn-pausa" onclick="pausar()" class="w-16 h-16 rounded-full bg-yellow-500/10 flex items-center justify-center opacity-20" disabled>
-                <span id="pause-icon" class="text-yellow-500 text-xl font-bold">||</span>
-            </button>
-            <button id="btn-principal" onclick="toggleEntreno()" class="flex-1 bg-apple-green text-black rounded-2xl font-black text-sm uppercase tracking-widest italic">Iniciar Sesión</button>
-        </div>
-    </div>
-
     <div class="px-2 mb-4">
         <h2 class="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em]">Sugerencia del Coach</h2>
         <p id="coach-reason" class="text-[11px] text-apple-green italic mt-1 font-medium"></p>
@@ -92,19 +91,76 @@
     <div id="contenedor-rutina" class="space-y-3"></div>
 
     <script>
-        let seg=0, crono, running=false, paused=false, kcal=0;
-        
-        let myTools = JSON.parse(localStorage.getItem('myToolsV23')) || [
+        let seg=0, crono = null, running=false, paused=false, kcal=0;
+        let myTools = JSON.parse(localStorage.getItem('myToolsV24')) || [
             {id: 1, n: "Multiestación", t: "fuerza", w: 40},
-            {id: 2, n: "Rodillo de rulos", t: "cardio", w: 0},
+            {id: 2, n: "Rodillo", t: "cardio", w: 0},
             {id: 3, n: "Mancuernas", t: "fuerza", w: 10}
         ];
-
-        // Ajuste acumulado de kilos (Memoria de progresión)
         let globalWeightAdjust = parseFloat(localStorage.getItem('globalWeightAdjust')) || 0;
 
-        function init() {
-            renderTools();
+        function init() { renderTools(); generarRutinaInteligente(); }
+
+        function toggleEntreno() {
+            const btn = document.getElementById('btn-principal');
+            const pBtn = document.getElementById('btn-pausa');
+            
+            if (!running) {
+                // INICIAR
+                running = true; paused = false;
+                btn.innerText = "FINALIZAR";
+                btn.classList.replace('bg-apple-green','bg-red-600');
+                btn.classList.replace('text-black','text-white');
+                pBtn.disabled = false;
+                pBtn.classList.remove('opacity-20');
+                document.getElementById('pause-icon').innerText = "||";
+                
+                if(crono) clearInterval(crono);
+                crono = setInterval(() => { seg++; updateDisp(); }, 1000);
+            } else {
+                // FINALIZAR - PAUSA PRIMERO EL TIEMPO
+                if(crono) { clearInterval(crono); crono = null; }
+                document.getElementById('modal-feedback').classList.add('active');
+            }
+        }
+
+        function pausar() {
+            if (!running) return;
+            const icon = document.getElementById('pause-icon');
+            if (!paused) {
+                paused = true;
+                if(crono) { clearInterval(crono); crono = null; }
+                icon.innerText = "▶";
+            } else {
+                paused = false;
+                icon.innerText = "||";
+                if(crono) clearInterval(crono);
+                crono = setInterval(() => { seg++; updateDisp(); }, 1000);
+            }
+        }
+
+        function updateDisp() {
+            let m=Math.floor(seg/60), s=seg%60;
+            const t = `${m}:${s.toString().padStart(2,'0')}`;
+            document.getElementById('display').innerText = t;
+            document.getElementById('session-time').innerText = t;
+        }
+
+        function procesarFeedback(kgChange) {
+            globalWeightAdjust += kgChange;
+            localStorage.setItem('globalWeightAdjust', globalWeightAdjust);
+            
+            // RESET TOTAL
+            running = false; paused = false;
+            if(crono) { clearInterval(crono); crono = null; }
+            seg = 0; updateDisp();
+            
+            document.getElementById('btn-principal').innerText = "INICIAR SESIÓN";
+            document.getElementById('btn-principal').className = "flex-1 bg-apple-green text-black rounded-2xl font-black text-sm uppercase tracking-widest italic";
+            document.getElementById('btn-pausa').disabled = true;
+            document.getElementById('btn-pausa').classList.add('opacity-20');
+            document.getElementById('modal-feedback').classList.remove('active');
+            
             generarRutinaInteligente();
         }
 
@@ -112,122 +168,49 @@
             const cont = document.getElementById('contenedor-rutina');
             const reason = document.getElementById('coach-reason');
             cont.innerHTML = '';
-
             const activas = myTools.filter(t => localStorage.getItem('e_'+t.n) === 'true');
-            if(activas.length === 0) {
-                reason.innerText = "Activa herramientas para empezar.";
-                return;
-            }
+            if(activas.length === 0) { reason.innerText = "Activa herramientas."; return; }
 
             const ultimaSesion = localStorage.getItem('tipo_ultima_sesion');
             let tipoHoy = (ultimaSesion === 'fuerza') ? 'cardio' : 'fuerza';
-            
-            let adjustText = globalWeightAdjust === 0 ? "" : 
-                             (globalWeightAdjust > 0 ? ` +${globalWeightAdjust}kg extra por buen ritmo.` : ` ${globalWeightAdjust}kg por fatiga previa.`);
+            reason.innerText = (tipoHoy === 'cardio') ? "Sesión aeróbica recomendada hoy." : `Fuerza con ajuste de ${globalWeightAdjust}kg.`;
 
-            reason.innerText = (tipoHoy === 'cardio') 
-                ? "Sesión aeróbica recomendada hoy." 
-                : `Día de fuerza.${adjustText}`;
-
-            let seleccionadas = activas.filter(t => t.t === tipoHoy);
-            if(seleccionadas.length === 0) seleccionadas = activas;
-
-            seleccionadas.slice(0, 3).forEach(tool => {
-                let sugerencia = "";
-                if(tool.t === 'cardio') {
-                    sugerencia = "35-40 min a ritmo constante.";
-                } else {
-                    // Lógica V23: Peso Final = Peso Herramienta + Ajuste Kg
-                    const pesoFinal = Math.max(0, tool.w + globalWeightAdjust);
-                    sugerencia = `4 Series de 10-12 Reps. Carga: ${pesoFinal}kg`;
-                }
-
+            activas.filter(t => t.t === tipoHoy).slice(0, 3).forEach(tool => {
+                let sugerencia = tool.t === 'cardio' ? "35 min ritmo constante." : `4x12 Reps. Carga: ${Math.max(0, tool.w + globalWeightAdjust)}kg`;
                 cont.innerHTML += `
                     <div class="apple-card border-l-2 border-apple-green flex justify-between items-center py-5">
-                        <div class="flex-1">
-                            <h3 class="font-black text-xs uppercase italic tracking-tight">${tool.n}</h3>
-                            <p class="text-[10px] text-gray-500 font-bold uppercase mt-1 italic">${sugerencia}</p>
-                        </div>
-                        <button onclick="completarEj('`+tool.t+`')" class="bg-white/5 border border-white/10 px-4 py-2 rounded-xl font-black text-[10px] uppercase text-apple-green">LOG</button>
+                        <div class="flex-1"><h3 class="font-black text-xs uppercase italic">${tool.n}</h3><p class="text-[10px] text-gray-500 font-bold uppercase mt-1 italic">${sugerencia}</p></div>
+                        <button onclick="completarEj('`+tool.t+`')" class="bg-white/5 border border-white/10 px-4 py-2 rounded-xl font-black text-[10px] text-apple-green">LOG</button>
                     </div>`;
             });
         }
 
-        function toggleEntreno() {
-            if (!running) {
-                running = true;
-                document.getElementById('btn-principal').innerText = "FINALIZAR";
-                document.getElementById('btn-principal').classList.replace('bg-apple-green','bg-red-600');
-                document.getElementById('btn-pausa').disabled = false;
-                document.getElementById('btn-pausa').classList.remove('opacity-20');
-                crono = setInterval(() => { seg++; updateDisp(); }, 1000);
-            } else {
-                document.getElementById('modal-feedback').classList.add('active');
-            }
-        }
-
-        function procesarFeedback(kgChange) {
-            // Aplicamos el cambio directo de kilos
-            globalWeightAdjust += kgChange;
-            localStorage.setItem('globalWeightAdjust', globalWeightAdjust);
-            
-            running = false; clearInterval(crono);
-            document.getElementById('btn-principal').innerText = "INICIAR SESIÓN";
-            document.getElementById('btn-principal').className = "flex-1 bg-apple-green text-black rounded-2xl font-black text-sm uppercase tracking-widest italic";
-            document.getElementById('modal-feedback').classList.remove('active');
-            
-            const msg = kgChange > 0 ? `Entendido. Subiremos ${kgChange}kg mañana.` : 
-                       (kgChange < 0 ? `Entendido. Bajaremos ${Math.abs(kgChange)}kg mañana.` : "Mantendremos los pesos actuales.");
-            alert(msg);
-            generarRutinaInteligente();
-        }
-
-        function completarEj(tipo) {
-            localStorage.setItem('tipo_ultima_sesion', tipo);
-            generarRutinaInteligente();
-        }
+        function completarEj(tipo) { localStorage.setItem('tipo_ultima_sesion', tipo); generarRutinaInteligente(); }
 
         function renderTools() {
-            const cont = document.getElementById('lista-equip');
-            cont.innerHTML = '';
+            const cont = document.getElementById('lista-equip'); cont.innerHTML = '';
             myTools.forEach(tool => {
                 const act = localStorage.getItem('e_'+tool.n) === 'true';
-                cont.innerHTML += `
-                    <div class="chip-container ${act?'active':''}">
-                        <div class="chip-label" onclick="toggleTool('${tool.n}')">
-                            ${tool.n} <span class="opacity-40 text-[8px] ml-1">(${tool.w}kg base)</span>
-                        </div>
-                        <button onclick="deleteTool(${tool.id})" class="btn-del text-xs">✕</button>
-                    </div>`;
+                cont.innerHTML += `<div class="chip-container ${act?'active':''}">
+                    <div class="chip-label" onclick="toggleTool('${tool.n}')">${tool.n} <span class="opacity-40 text-[8px]">(${tool.w}kg)</span></div>
+                    <button onclick="deleteTool(${tool.id})" class="btn-del text-xs">✕</button></div>`;
             });
         }
 
         function addTool() {
             const name = document.getElementById('new-tool-name').value.trim();
             const type = document.getElementById('new-tool-type').value;
-            const weight = document.getElementById('new-tool-weight').value || 0;
+            const weight = parseFloat(document.getElementById('new-tool-weight').value || 0);
             if(name) {
-                const newTool = { id: Date.now(), n: name, t: type, w: parseFloat(weight) };
-                myTools.push(newTool);
-                localStorage.setItem('myToolsV23', JSON.stringify(myTools));
+                myTools.push({ id: Date.now(), n: name, t: type, w: weight });
+                localStorage.setItem('myToolsV24', JSON.stringify(myTools));
                 localStorage.setItem('e_'+name, 'true');
-                document.getElementById('new-tool-name').value = '';
-                document.getElementById('new-tool-weight').value = '';
-                init();
+                document.getElementById('new-tool-name').value = ''; init();
             }
         }
 
-        function deleteTool(id) {
-            myTools = myTools.filter(t => t.id !== id);
-            localStorage.setItem('myToolsV23', JSON.stringify(myTools));
-            init();
-        }
-
-        function toggleTool(name) {
-            const val = localStorage.getItem('e_'+name) === 'true';
-            localStorage.setItem('e_'+name, !val);
-            init();
-        }
+        function deleteTool(id) { myTools = myTools.filter(t => t.id !== id); localStorage.setItem('myToolsV24', JSON.stringify(myTools)); init(); }
+        function toggleTool(name) { localStorage.setItem('e_'+name, localStorage.getItem('e_'+name) !== 'true'); init(); }
 
         async function conectarPolar() {
             try {
@@ -243,19 +226,6 @@
                     document.getElementById('kcal-val').innerHTML = `${Math.floor(kcal)} <span class="text-xs">KCAL</span>`;
                 });
             } catch (e) { console.log(e); }
-        }
-
-        function updateDisp() {
-            let m=Math.floor(seg/60), s=seg%60;
-            const t = `${m}:${s.toString().padStart(2,'0')}`;
-            document.getElementById('display').innerText = t;
-            document.getElementById('session-time').innerText = t;
-        }
-
-        function pausar() {
-            const icon = document.getElementById('pause-icon');
-            if (!paused) { paused=true; clearInterval(crono); icon.innerText = "▶"; }
-            else { paused=false; crono = setInterval(() => { seg++; updateDisp(); }, 1000); icon.innerText = "||"; }
         }
 
         init();
