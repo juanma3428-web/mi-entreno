@@ -3,13 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Apple Coach V29 - Recovery Mode</title>
+    <title>Apple Coach V29 - Personal Trainer Pro</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         body { background-color: #000; color: #fff; font-family: -apple-system, sans-serif; -webkit-tap-highlight-color: transparent; }
         .apple-card { background: #1c1c1e; border-radius: 20px; padding: 20px; margin-bottom: 12px; border: 1px solid #2c2c2e; }
         .text-apple-green { color: #30d158; }
-        .text-recovery-gold { color: #ffd60a; }
+        .text-calist-blue { color: #007aff; }
         .bg-apple-green { background-color: #30d158; }
         .drawer { max-height: 0; overflow: hidden; transition: max-height 0.5s ease-in-out; }
         .drawer-open { max-height: 2000px; }
@@ -21,134 +21,162 @@
 
     <div class="flex justify-between items-center mb-6 px-2">
         <div>
-            <h1 class="text-xl font-black italic tracking-tighter italic">APPLE COACH <span class="text-apple-green">V29</span></h1>
-            <p id="recovery-status" class="text-[9px] font-bold uppercase tracking-widest italic"></p>
+            <h1 class="text-xl font-black italic tracking-tighter">APPLE COACH <span class="text-apple-green">V29</span></h1>
+            <p id="coach-logic-status" class="text-[9px] text-gray-500 font-bold uppercase tracking-widest italic"></p>
         </div>
-        <button onclick="document.getElementById('modal-tanita').classList.add('active')" class="w-10 h-10 rounded-full bg-white/5 border border-white/10 flex items-center justify-center">⚖️</button>
+        <button onclick="document.getElementById('modal-tanita').classList.add('active')" class="w-10 h-10 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-lg">⚖️</button>
     </div>
 
-    <div id="mision-container" class="space-y-3">
-        </div>
-
-    <div class="apple-card mt-6 border-t border-white/5">
-        <h2 class="text-[9px] font-black text-gray-500 uppercase mb-3 tracking-widest">Carga Semanal</h2>
-        <div id="weekly-dots" class="flex gap-2 justify-between">
+    <div class="mb-8">
+        <h2 class="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] mb-4 ml-2">Misión del Entrenador Personal</h2>
+        <div id="mision-container" class="space-y-3">
             </div>
+    </div>
+
+    <div class="apple-card border-l-4 border-red-600">
+        <div class="flex justify-between items-center">
+            <div id="bpm-val" class="text-5xl font-bold tracking-tighter">-- <span class="text-xs text-red-500">BPM</span></div>
+            <div id="display" class="text-5xl font-light italic tracking-tighter">00:00</div>
+        </div>
+        <div class="flex gap-2 mt-4">
+            <button onclick="conectarPolar()" class="bg-white/5 p-4 rounded-2xl text-[10px] font-black uppercase flex-1 border border-white/5">Polar H10</button>
+            <button id="btn-principal" onclick="toggleEntreno()" class="bg-apple-green text-black p-4 rounded-2xl text-[10px] font-black uppercase flex-[2] italic">Iniciar Sesión</button>
+        </div>
+    </div>
+
+    <div class="apple-card">
+        <button onclick="document.getElementById('equip-drawer').classList.toggle('drawer-open')" class="w-full flex justify-between items-center">
+            <span class="text-[10px] font-black text-gray-500 uppercase italic">Añadir Ejercicios / Config</span>
+            <span class="text-apple-green text-[10px] font-black">⚙️</span>
+        </button>
+        <div id="equip-drawer" class="drawer">
+            <div class="mt-4 p-4 bg-black rounded-2xl border border-white/5">
+                <input type="text" id="new-tool-name" class="w-full bg-[#1c1c1e] p-3 rounded-xl text-xs mb-2" placeholder="Ej: Sentadilla Clásica">
+                <select id="new-tool-type" class="w-full bg-[#1c1c1e] p-3 rounded-xl text-xs mb-2 text-gray-400">
+                    <option value="calistenia">Calistenia (Peso Corporal)</option>
+                    <option value="fuerza">Fuerza (Discos/Pesas)</option>
+                    <option value="cardio">Cardio</option>
+                </select>
+                <input type="number" id="new-tool-weight" class="w-full bg-[#1c1c1e] p-3 rounded-xl text-xs mb-4" placeholder="Peso Base (0 si es Calist.)">
+                <button onclick="addTool()" class="w-full bg-apple-green text-black py-3 rounded-xl font-black text-xs uppercase italic tracking-widest">Guardar en Base de Datos</button>
+            </div>
+            <div id="lista-equip" class="mt-4 space-y-1"></div>
+        </div>
     </div>
 
     <div id="modal-tanita" class="modal-overlay">
         <div class="w-[85%] bg-[#1c1c1e] p-6 rounded-3xl border border-white/10">
-            <h3 class="text-center text-[10px] font-black text-apple-green uppercase mb-6 italic tracking-widest">Datos Tanita</h3>
-            <input type="number" id="tanita-peso" class="w-full bg-black p-3 rounded-xl mb-3 text-center" placeholder="Peso (kg)">
-            <input type="number" id="tanita-grasa" class="w-full bg-black p-3 rounded-xl mb-3 text-center" placeholder="% Grasa">
-            <input type="number" id="tanita-musculo" class="w-full bg-black p-3 rounded-xl mb-6 text-center" placeholder="Músculo (kg)">
-            <button onclick="guardarTanita()" class="w-full bg-apple-green text-black py-4 rounded-xl font-black text-xs uppercase italic">Actualizar Coach</button>
+            <h3 class="text-center text-[10px] font-black text-apple-green uppercase mb-6 italic tracking-widest">Actualizar Tanita</h3>
+            <div class="space-y-4">
+                <input type="number" id="tanita-peso" class="w-full bg-black p-3 rounded-xl text-center" placeholder="Peso corporal (kg)">
+                <input type="number" id="tanita-grasa" class="w-full bg-black p-3 rounded-xl text-center" placeholder="% Grasa">
+                <input type="number" id="tanita-musculo" class="w-full bg-black p-3 rounded-xl text-center" placeholder="Masa Muscular (kg)">
+            </div>
+            <button onclick="guardarTanita()" class="w-full bg-apple-green text-black py-4 rounded-xl mt-6 font-black text-xs uppercase italic">Sincronizar Coach</button>
         </div>
     </div>
 
     <script>
+        // MEMORIA V29
+        let seg=0, crono=null, running=false;
         let myTools = JSON.parse(localStorage.getItem('myToolsV29')) || [];
-        let bodyComp = JSON.parse(localStorage.getItem('bodyComp')) || { peso: 75, grasa: 20, musculo: 35 };
-        let history = JSON.parse(localStorage.getItem('trainingHistory')) || []; // Array de fechas: ['2026-03-24', '2026-03-23']
+        let bodyComp = JSON.parse(localStorage.getItem('bodyComp')) || { peso: 75.0, grasa: 20.0, musculo: 35.0 };
+        let globalWeightAdjust = parseFloat(localStorage.getItem('globalWeightAdjust')) || 0;
 
-        function initCoach() {
+        // MOTOR DE EVIDENCIA CIENTÍFICA
+        function planificarSesionInteligente() {
             const container = document.getElementById('mision-container');
-            const status = document.getElementById('recovery-status');
-            const dots = document.getElementById('weekly-dots');
-            
-            // 1. Calcular fatiga (Entrenos en los últimos 4 días)
-            const hoy = new Date().toDateString();
-            const entrenosSeguidos = calcularRacha();
-            
-            // 2. Lógica de Descanso Científico
-            let esDiaDeDescanso = false;
-            let tipoDescanso = "";
+            const status = document.getElementById('coach-logic-status');
+            container.innerHTML = '';
 
-            if (entrenosSeguidos >= 3) {
-                esDiaDeDescanso = true;
-                tipoDescanso = bodyComp.grasa > 21 ? "ACTIVO" : "TOTAL";
+            const ultimaVez = localStorage.getItem('tipo_ultima_sesion');
+            let planHoy = [];
+            let razon = "";
+
+            // LÓGICA DE DECISIÓN DEL PERSONAL TRAINER
+            // Regla 1: Si el % de grasa es superior a 22, priorizar Calistenia Metabólica
+            if(bodyComp.grasa > 22) {
+                planHoy = myTools.filter(t => t.t === 'calistenia').slice(0, 4);
+                razon = "Plan: Calistenia para Quema Metabólica (Evidencia: Alto Volumen)";
+            } 
+            // Regla 2: Si ayer fue Fuerza, hoy toca recuperación activa o Calistenia
+            else if(ultimaVez === 'fuerza') {
+                planHoy = myTools.filter(t => t.t === 'calistenia').slice(0, 3);
+                razon = "Plan: Calistenia & Recuperación Articular (Post-Pesas)";
+            }
+            // Regla 3: Si la masa muscular es baja, priorizar Fuerza
+            else {
+                planHoy = [
+                    ...myTools.filter(t => t.t === 'fuerza').slice(0, 2),
+                    ...myTools.filter(t => t.t === 'calistenia').slice(0, 1)
+                ];
+                razon = "Plan: Hipertrofia Mixta (Fuerza + Control)";
             }
 
-            // 3. Renderizado de Interfaz
-            if (esDiaDeDescanso) {
-                status.innerText = "Estado: Recuperación Necesaria";
-                status.classList.add('text-recovery-gold');
-                
-                let consejoDescanso = tipoDescanso === "ACTIVO" 
-                    ? "Hoy toca Descanso Activo: Camina 45 min o haz estiramientos suaves. Tu cuerpo necesita reciclar el lactato sin carga."
-                    : "Hoy toca Descanso Total: Reposo absoluto. La evidencia científica sugiere 24h de cese para supercompensar fibras.";
+            status.innerText = razon;
 
-                container.innerHTML = `
-                    <div class="apple-card border-l-4 border-yellow-500 py-10 text-center">
-                        <span class="text-4xl mb-4 block">🛌</span>
-                        <h2 class="text-xl font-black italic uppercase text-recovery-gold tracking-tighter">Día de Recuperación ${tipoDescanso}</h2>
-                        <p class="text-[11px] text-gray-400 mt-4 px-4 font-medium leading-relaxed">${consejoDescanso}</p>
-                        <button onclick="forzarEntreno()" class="mt-8 text-[9px] font-black text-gray-600 underline uppercase">Forzar entrenamiento (No recomendado)</button>
+            // RENDERIZADO DE LAS TARJETAS (Respetando diseño V29)
+            planHoy.forEach(tool => {
+                let directriz = "";
+                let carga = "";
+                let colorBorder = tool.t === 'calistenia' ? 'border-blue-500' : 'border-apple-green';
+
+                if(tool.t === 'fuerza') {
+                    carga = `Carga: ${tool.w + globalWeightAdjust}kg (Ajustado)`;
+                    directriz = `Directriz: 4 x 10-12 Reps`;
+                } else if(tool.t === 'calistenia') {
+                    carga = `Peso Corporal: ${bodyComp.peso}kg`;
+                    directriz = `Directriz: 4 x 15 Reps (Fallo Técnico)`;
+                }
+
+                container.innerHTML += `
+                    <div class="apple-card border-l-2 ${colorBorder} py-5">
+                        <h3 class="font-black text-xs uppercase italic">${tool.n} ${tool.t==='calistenia'?'<span class="text-blue-500 text-[8px]">[CAL]</span>':''}</h3>
+                        <p class="text-[9px] text-gray-500 font-bold mt-1 uppercase">${carga}</p>
+                        <p class="text-[10px] ${tool.t==='calistenia'?'text-blue-400':'text-apple-green'} font-black mt-1 italic uppercase">${directriz}</p>
                     </div>`;
+            });
+        }
+
+        // FUNCIONES DE CONTROL (Respetando V29)
+        function toggleEntreno() {
+            if(!running) {
+                running = true;
+                document.getElementById('btn-principal').innerText = "FINALIZAR SESIÓN";
+                document.getElementById('btn-principal').className = "flex-1 bg-red-600 text-white p-4 rounded-2xl text-[10px] font-black uppercase italic";
+                crono = setInterval(() => { seg++; updateDisp(); }, 1000);
             } else {
-                status.innerText = `Estado: Óptimo para Entrenar (Racha: ${entrenosSeguidos}d)`;
-                status.classList.add('text-apple-green');
-                generarRutina(); // Función de la V29
-            }
-
-            renderDots();
-        }
-
-        function calcularRacha() {
-            let racha = 0;
-            let fechaArr = [...history].reverse();
-            for(let i=0; i < fechaArr.length; i++) {
-                // Si hay entrenos en días consecutivos hacia atrás
-                racha++;
-            }
-            return racha > 3 ? 3 : racha; // Limitamos para la lógica de ejemplo
-        }
-
-        function renderDots() {
-            const dotsCont = document.getElementById('weekly-dots');
-            dotsCont.innerHTML = '';
-            // Renderizamos 7 círculos que representan la semana
-            for(let i=0; i<7; i++) {
-                dotsCont.innerHTML += `<div class="w-3 h-3 rounded-full bg-white/5 border border-white/10"></div>`;
+                clearInterval(crono);
+                localStorage.setItem('tipo_ultima_sesion', document.getElementById('coach-logic-status').innerText.toLowerCase().includes('calistenia') ? 'calistenia' : 'fuerza');
+                location.reload();
             }
         }
 
-        function generarRutina() {
-            const container = document.getElementById('mision-container');
-            // Aquí iría tu lógica de la V29 que ya tenemos de los bloques de ejercicios
-            container.innerHTML = `
-                <div class="apple-card border-l-4 border-apple-green py-6">
-                    <h3 class="text-xs font-black italic uppercase">Cargando Rutina Científica...</h3>
-                    <p class="text-[9px] text-gray-500 mt-1 uppercase">Analizando última sesión y Tanita</p>
-                </div>
-                <button onclick="logEntreno()" class="w-full bg-apple-green text-black py-4 rounded-2xl font-black text-xs uppercase italic">Marcar Misión como Completada</button>
-            `;
-        }
-
-        function logEntreno() {
-            const hoy = new Date().toDateString();
-            if(!history.includes(hoy)) {
-                history.push(hoy);
-                localStorage.setItem('trainingHistory', JSON.stringify(history));
-            }
-            location.reload();
-        }
-
-        function forzarEntreno() {
-            // Permite saltarse el descanso si el usuario lo desea
-            localStorage.setItem('trainingHistory', JSON.stringify([]));
-            location.reload();
+        function updateDisp() {
+            let m=Math.floor(seg/60), s=seg%60;
+            document.getElementById('display').innerText = `${m}:${s.toString().padStart(2,'0')}`;
         }
 
         function guardarTanita() {
-            bodyComp.peso = document.getElementById('tanita-peso').value;
-            bodyComp.grasa = document.getElementById('tanita-grasa').value;
-            bodyComp.musculo = document.getElementById('tanita-musculo').value;
+            bodyComp.peso = parseFloat(document.getElementById('tanita-peso').value);
+            bodyComp.grasa = parseFloat(document.getElementById('tanita-grasa').value);
+            bodyComp.musculo = parseFloat(document.getElementById('tanita-musculo').value);
             localStorage.setItem('bodyComp', JSON.stringify(bodyComp));
             location.reload();
         }
 
-        window.onload = initCoach;
+        function addTool() {
+            const n = document.getElementById('new-tool-name').value;
+            const t = document.getElementById('new-tool-type').value;
+            const w = parseFloat(document.getElementById('new-tool-weight').value || 0);
+            if(n) {
+                myTools.push({id: Date.now(), n, t, w});
+                localStorage.setItem('myToolsV29', JSON.stringify(myTools));
+                location.reload();
+            }
+        }
+
+        window.onload = planificarSesionInteligente;
     </script>
 </body>
 </html>
