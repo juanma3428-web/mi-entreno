@@ -83,76 +83,81 @@
         let seg=0, crono = null, running=false, paused=false, kcal=0;
         let bodyComp = JSON.parse(localStorage.getItem('bodyComp')) || { peso: 75.0, grasa: 20.0, agua: 55.0, musculo: 35.0 };
 
-        // --- MEJORA DEFINITIVA DE CONEXIÓN POLAR H10 ---
-        async function conectarPolar() {
+        // --- MEJORA DE CONEXIÓN POLAR H10 ---
+     // --- MEJORA DEFINITIVA DE CONEXIÓN POLAR H10 ---
+async function conectarPolar() {
 
-            if (!navigator.bluetooth) {
-                alert("⚠️ Tu navegador no soporta Web Bluetooth.\nEn iPhone NO funciona con ningún navegador.");
-                return;
-            }
+    // 1. Comprobación de soporte
+    if (!navigator.bluetooth) {
+        alert("⚠️ Tu navegador no soporta Web Bluetooth.\nEn iPhone NO funciona con ningún navegador.");
+        return;
+    }
 
-            try {
-                console.log("Solicitando dispositivo Polar H10…");
+    try {
+        console.log("Solicitando dispositivo Polar H10…");
 
-                const device = await navigator.bluetooth.requestDevice({
-                    filters: [{ services: ['heart_rate'] }],
-                    optionalServices: ['battery_service', 'device_information']
-                });
+        const device = await navigator.bluetooth.requestDevice({
+            filters: [{ services: ['heart_rate'] }],
+            optionalServices: ['battery_service', 'device_information']
+        });
 
-                device.addEventListener("gattserverdisconnected", () => {
-                    console.log("❌ Polar desconectado. Intentando reconectar…");
-                    reconectar(device);
-                });
+        // Evento de desconexión
+        device.addEventListener("gattserverdisconnected", () => {
+            console.log("❌ Polar desconectado. Intentando reconectar…");
+            reconectar(device);
+        });
 
-                await conectarGATT(device);
+        await conectarGATT(device);
 
-            } catch (error) {
-                console.error("Error al conectar:", error);
-            }
-        }
+    } catch (error) {
+        console.error("Error al conectar:", error);
+    }
+}
 
-        async function conectarGATT(device) {
-            try {
-                const server = await device.gatt.connect();
-                const service = await server.getPrimaryService('heart_rate');
-                const characteristic = await service.getCharacteristic('heart_rate_measurement');
+async function conectarGATT(device) {
+    try {
+        const server = await device.gatt.connect();
+        const service = await server.getPrimaryService('heart_rate');
+        const characteristic = await service.getCharacteristic('heart_rate_measurement');
 
-                await characteristic.startNotifications();
+        await characteristic.startNotifications();
 
-                characteristic.oncharacteristicvaluechanged = (event) => {
-                    const value = event.target.value;
+        characteristic.oncharacteristicvaluechanged = (event) => {
+            const value = event.target.value;
 
-                    const flags = value.getUint8(0);
-                    const is16Bits = flags & 0x1;
+            const flags = value.getUint8(0);
+            const is16Bits = flags & 0x1;
 
-                    const heartRate = is16Bits
-                        ? value.getUint16(1, true)
-                        : value.getUint8(1);
+            const heartRate = is16Bits
+                ? value.getUint16(1, true)
+                : value.getUint8(1);
 
-                    document.getElementById('bpm-val').innerText = heartRate;
+            // Actualizar UI
+            document.getElementById('bpm-val').innerText = heartRate;
 
-                    kcal += (heartRate * (bodyComp.peso * 0.0001));
-                    document.getElementById('kcal-val').innerHTML =
-                        `${Math.floor(kcal)} <span class="text-xs uppercase">KCAL</span>`;
-                };
+            // Cálculo de kcal
+            kcal += (heartRate * (bodyComp.peso * 0.0001));
+            document.getElementById('kcal-val').innerHTML =
+                `${Math.floor(kcal)} <span class="text-xs uppercase">KCAL</span>`;
+        };
 
-                console.log("❤️ Polar H10 conectado correctamente");
+        console.log("❤️ Polar H10 conectado correctamente");
 
-            } catch (error) {
-                console.error("Error en GATT:", error);
-            }
-        }
+    } catch (error) {
+        console.error("Error en GATT:", error);
+    }
+}
 
-        async function reconectar(device) {
-            try {
-                await conectarGATT(device);
-            } catch (e) {
-                console.log("Reintento en 3s…");
-                setTimeout(() => reconectar(device), 3000);
-            }
-        }
+async function reconectar(device) {
+    try {
+        await conectarGATT(device);
+    } catch (e) {
+        console.log("Reintento en 3s…");
+        setTimeout(() => reconectar(device), 3000);
+    }
+}
 
-        // --- FUNCIONES DE CRONÓMETRO V29 ---
+        // --- FUNCIONES DE CRONÓMETRO V29 (RESTO DEL CÓDIGO) ---
         function toggleEntreno() {
             if (!running) {
                 running = true; paused = false;
@@ -162,6 +167,7 @@
                 crono = setInterval(() => { seg++; updateDisp(); }, 1000);
             } else {
                 clearInterval(crono); crono = null;
+                // Aquí iría tu modal de feedback original
             }
         }
 
@@ -178,8 +184,10 @@
             document.getElementById('session-time').innerText = t;
         }
 
+        // Mantener inicialización de Tanita
         function init() {
             document.getElementById('tanita-peso').value = bodyComp.peso;
+            // ... resto de tu init de la V29
         }
         init();
     </script>
