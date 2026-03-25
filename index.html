@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>APPLE COACH V29 - Fixed</title>
+    <title>APPLE COACH V29 - BlueFY Fix</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         body { background-color: #000; color: #fff; font-family: -apple-system, sans-serif; -webkit-tap-highlight-color: transparent; }
@@ -14,6 +14,10 @@
         .drawer-open { max-height: 3000px; padding-bottom: 20px; }
         .timer-font { font-variant-numeric: tabular-nums; font-weight: 200; letter-spacing: -2px; }
         .modal-overlay { background: rgba(0,0,0,0.9); display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 100; align-items: center; justify-content: center; padding: 20px; }
+        .pulse { animation: pulse-red 2s infinite; }
+        @keyframes pulse-red { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
+        /* Mejora para BlueFY: asegurar visibilidad del contenedor superior */
+        #mision-container { min-height: 50px; display: block !important; opacity: 1 !important; }
     </style>
 </head>
 <body class="p-4 pb-32">
@@ -23,9 +27,9 @@
             <h2 class="text-lg font-black italic uppercase mb-2 text-apple-green">Sesión Completada</h2>
             <p class="text-[10px] text-gray-400 uppercase font-bold mb-6 italic">Ajuste de intensidad para el próximo día:</p>
             <div class="grid grid-cols-1 gap-3">
-                <button onclick="saveFeedback(0.8)" class="bg-white/5 p-4 rounded-2xl border border-white/10 text-[10px] font-black uppercase italic">Muy Ligero</button>
+                <button onclick="saveFeedback(0.8)" class="bg-white/5 p-4 rounded-2xl border border-white/10 text-[10px] font-black uppercase italic text-white">Muy Ligero (Subir carga)</button>
                 <button onclick="saveFeedback(1.0)" class="bg-white/5 p-4 rounded-2xl border border-white/10 text-[10px] font-black uppercase italic text-apple-green">Intensidad Óptima</button>
-                <button onclick="saveFeedback(1.3)" class="bg-white/5 p-4 rounded-2xl border border-white/10 text-[10px] font-black uppercase italic">Demasiado Agotador</button>
+                <button onclick="saveFeedback(1.3)" class="bg-white/5 p-4 rounded-2xl border border-white/10 text-[10px] font-black uppercase italic text-white">Demasiado Duro (Bajar carga)</button>
             </div>
         </div>
     </div>
@@ -33,7 +37,7 @@
     <div class="flex justify-between items-center mb-6 px-2">
         <div>
             <h1 class="text-xl font-black italic tracking-tighter uppercase">APPLE COACH <span class="text-apple-green">V29</span></h1>
-            <p class="text-[8px] text-gray-500 font-black uppercase tracking-widest italic">Ajuste de Discos y Cardio Corregido</p>
+            <p class="text-[8px] text-gray-500 font-black uppercase tracking-widest italic">Optimizado para BlueFY + Polar H10</p>
         </div>
         <div class="flex gap-2">
             <button onclick="toggleDrawer('drawer-tanita')" class="w-10 h-10 rounded-full bg-white/5 border border-white/10 flex items-center justify-center">⚖️</button>
@@ -41,14 +45,18 @@
         </div>
     </div>
 
-    <div id="mision-container" class="space-y-3 mb-8"></div>
+    <div id="mision-container" class="space-y-3 mb-8">
+        </div>
 
     <div class="apple-card border-l-4 border-red-600">
         <div class="flex justify-between items-center mb-4">
             <div id="display" class="text-6xl timer-font italic">00:00</div>
-            <div class="text-right">
-                <span id="bpm-val" class="text-3xl font-bold text-red-500 tracking-tighter">--</span>
-                <p class="text-[8px] font-black text-gray-500 uppercase">Live BPM</p>
+            <div class="text-right flex flex-col items-end">
+                <div class="flex items-center gap-2">
+                    <span id="bpm-val" class="text-4xl font-bold text-red-500 tracking-tighter">--</span>
+                    <button onclick="connectPolar()" id="polar-btn" class="text-xl">❤️</button>
+                </div>
+                <p id="polar-status" class="text-[7px] font-black text-gray-500 uppercase tracking-tighter">Polar Desconectada</p>
             </div>
         </div>
         <div class="flex gap-2">
@@ -65,7 +73,7 @@
                 <input type="number" id="tan-g" class="bg-[#1c1c1e] p-3 rounded-xl text-xs text-center border border-white/5" placeholder="%G">
                 <input type="number" id="tan-m" class="bg-[#1c1c1e] p-3 rounded-xl text-xs text-center border border-white/5" placeholder="Musc">
             </div>
-            <button onclick="saveTanita()" class="w-full mt-4 bg-apple-green text-black py-4 rounded-xl font-black text-[10px] uppercase italic">Actualizar</button>
+            <button onclick="saveTanita()" class="w-full mt-4 bg-apple-green text-black py-4 rounded-xl font-black text-[10px] uppercase italic text-white">Actualizar</button>
         </div>
     </div>
 
@@ -83,7 +91,7 @@
         </div>
 
         <div class="apple-card bg-black">
-            <p class="text-[9px] font-black text-gray-400 uppercase mb-4 italic">Herramientas</p>
+            <p class="text-[9px] font-black text-gray-400 uppercase mb-4 italic">Herramientas de Entreno</p>
             <input type="text" id="tn" class="w-full bg-[#1c1c1e] p-3 rounded-xl text-xs mb-2 border border-white/5" placeholder="Nombre">
             <div class="flex gap-2 mb-4">
                 <select id="tt" class="flex-1 bg-[#1c1c1e] p-3 rounded-xl text-xs text-gray-400">
@@ -106,71 +114,86 @@
         let intensityFactor = parseFloat(localStorage.getItem('intensityFactor')) || 1.0;
         
         let seg=0, crono=null, running=false, pausado=false;
+        let bluetoothDevice, heartRateCharacteristic;
+
+        // CONEXIÓN POLAR
+        async function connectPolar() {
+            try {
+                document.getElementById('polar-status').innerText = "Buscando...";
+                bluetoothDevice = await navigator.bluetooth.requestDevice({ filters: [{ services: ['heart_rate'] }] });
+                const server = await bluetoothDevice.gatt.connect();
+                const service = await server.getPrimaryService('heart_rate');
+                heartRateCharacteristic = await service.getCharacteristic('heart_rate_measurement');
+                await heartRateCharacteristic.startNotifications();
+                heartRateCharacteristic.addEventListener('characteristicvaluechanged', (e) => {
+                    document.getElementById('bpm-val').innerText = e.target.value.getUint8(1);
+                    document.getElementById('bpm-val').classList.add('pulse');
+                });
+                document.getElementById('polar-status').innerText = "H10 Conectada";
+                document.getElementById('polar-status').classList.replace('text-gray-500', 'text-apple-green');
+            } catch (error) { document.getElementById('polar-status').innerText = "Error"; }
+        }
 
         function toggleDrawer(id) { document.getElementById(id).classList.toggle('drawer-open'); }
 
-        function getCapacidadMaxima() {
-            return myDiscs.reduce((acc, d) => acc + (parseFloat(d.w) * parseInt(d.q)), 0);
-        }
+        function getCapacidadMaxima() { return myDiscs.reduce((acc, d) => acc + (parseFloat(d.w) * parseInt(d.q)), 0); }
 
         function calcularPlan(tool) {
             const racha = history.length;
             const maxFisico = getCapacidadMaxima();
-            let repsExtra = 0;
-            let pesoFinal = tool.w;
+            let repsExtra = 0, pesoFinal = tool.w;
 
-            if (tool.t === 'fuerza' && tool.w > maxFisico) {
-                pesoFinal = maxFisico;
-                repsExtra = Math.round((tool.w - maxFisico) * 0.5); 
-            }
+            if (tool.t === 'fuerza' && tool.w > maxFisico) { pesoFinal = maxFisico; repsExtra = Math.round((tool.w - maxFisico) * 0.5); }
 
             if (tool.t === 'fuerza') {
                 const ratio = pesoFinal / (bodyComp.musculo || 35);
-                let base = ratio > 1.2 ? 6 : 10;
-                let final = Math.round((base + repsExtra) / intensityFactor);
+                let final = Math.round(((ratio > 1.2 ? 6 : 10) + repsExtra) / intensityFactor);
                 return { reps: `${final}-${final+2} Reps`, carga: `${pesoFinal}kg (Límite Físico)` };
             }
             if (tool.t === 'calistenia') {
                 let final = Math.round((15 - racha) / intensityFactor);
                 return { reps: `${final}-${final+3} Reps`, carga: "Peso Corporal" };
             }
-            // CORRECCIÓN: CARDIO POR TIEMPO
             if (tool.t === 'cardio') {
-                let tiempoBase = bodyComp.grasa > 20 ? 40 : 25;
-                let tiempoFinal = Math.round(tiempoBase / intensityFactor);
-                return { reps: `${tiempoFinal} Min`, carga: "Cardio" };
+                let final = Math.round((bodyComp.grasa > 20 ? 40 : 25) / intensityFactor);
+                return { reps: `${final} Min`, carga: "Cardio" };
             }
-            return { reps: "12 Reps", carga: "General" };
+            return { reps: "12", carga: "General" };
         }
 
+        // --- FIX BLUEFY: GENERACIÓN REFORZADA ---
         function generarMision() {
             const cont = document.getElementById('mision-container');
-            cont.innerHTML = '';
+            if (!cont) return;
+            
             let pool = myTools.filter(t => t.active !== false);
-            if (pool.length === 0) return;
+            if (pool.length === 0) {
+                cont.innerHTML = `<p class="text-[8px] text-center text-gray-600 uppercase italic">Configura tus herramientas para empezar</p>`;
+                return;
+            }
+
+            let htmlContent = '';
             pool.sort(() => 0.5 - Math.random()).slice(0, 3).forEach(t => {
                 const plan = calcularPlan(t);
                 const color = t.t === 'calistenia' ? 'border-blue-500' : (t.t === 'cardio' ? 'border-orange-500' : 'border-apple-green');
                 const labelReps = t.t === 'cardio' ? 'Tiempo' : 'Reps';
-                cont.innerHTML += `
+                htmlContent += `
                     <div class="apple-card border-l-4 ${color} py-6 flex justify-between items-center bg-white/[0.02]">
-                        <div><h3 class="font-black text-sm uppercase italic">${t.n}</h3><p class="text-[8px] text-gray-500 font-bold uppercase mt-1">${plan.carga}</p></div>
+                        <div><h3 class="font-black text-sm uppercase italic text-white">${t.n}</h3><p class="text-[8px] text-gray-500 font-bold uppercase mt-1 italic">${plan.carga}</p></div>
                         <div class="text-right"><p class="text-[14px] font-black italic text-apple-green">${plan.reps}</p><p class="text-[6px] text-gray-600 font-bold uppercase">${labelReps}</p></div>
                     </div>`;
             });
+            cont.innerHTML = htmlContent;
         }
 
-        // FUNCIONALIDAD DISCOS REPARADA
         function addDisc() {
             const wVal = parseFloat(document.getElementById('dw').value);
             const qVal = parseInt(document.getElementById('dq').value);
             if(!isNaN(wVal) && !isNaN(qVal)) {
                 myDiscs.push({w: wVal, q: qVal});
                 localStorage.setItem('myDiscsV29', JSON.stringify(myDiscs));
-                document.getElementById('dw').value = '';
-                document.getElementById('dq').value = '';
-                renderDiscs();
-                generarMision();
+                document.getElementById('dw').value = ''; document.getElementById('dq').value = '';
+                renderDiscs(); generarMision();
             }
         }
 
@@ -178,21 +201,16 @@
             const cont = document.getElementById('lista-discos');
             cont.innerHTML = '';
             myDiscs.forEach((d, index) => { 
-                cont.innerHTML += `<div class="bg-white/5 border border-white/10 px-3 py-2 rounded-xl text-[10px] font-black uppercase flex gap-2 items-center text-white">
-                    ${d.q}x ${d.w}kg 
-                    <button onclick="removeDisc(${index})" class="text-red-500 font-bold ml-1 px-1">✕</button>
-                </div>`; 
+                cont.innerHTML += `<div class="bg-white/5 border border-white/10 px-3 py-2 rounded-xl text-[10px] font-black uppercase flex gap-2 items-center text-white italic">${d.q}x ${d.w}kg <button onclick="removeDisc(${index})" class="text-red-500 font-bold ml-1 px-1">✕</button></div>`; 
             });
         }
 
         function removeDisc(index) {
             myDiscs.splice(index, 1);
             localStorage.setItem('myDiscsV29', JSON.stringify(myDiscs));
-            renderDiscs();
-            generarMision();
+            renderDiscs(); generarMision();
         }
 
-        // CRONÓMETRO Y FEEDBACK
         function toggleEntreno() {
             if(!running) {
                 running = true; pausado = false;
@@ -232,7 +250,7 @@
         function renderTools() {
             const cont = document.getElementById('lista-herramientas'); cont.innerHTML = '';
             myTools.forEach(t => {
-                cont.innerHTML += `<div class="flex justify-between items-center bg-white/5 p-4 rounded-xl mb-1 border border-white/5"><div class="flex items-center gap-3"><input type="checkbox" ${t.active!==false?'checked':''} onchange="toggleStatus(${t.id})" class="accent-apple-green w-4 h-4"><span class="text-[10px] font-bold uppercase italic">${t.n}</span></div><button onclick="deleteTool(${t.id})" class="text-red-500 text-xs font-bold px-2">✕</button></div>`;
+                cont.innerHTML += `<div class="flex justify-between items-center bg-white/5 p-4 rounded-xl mb-1 border border-white/5"><div class="flex items-center gap-3"><input type="checkbox" ${t.active!==false?'checked':''} onchange="toggleStatus(${t.id})" class="accent-apple-green w-4 h-4"><span class="text-[10px] font-bold uppercase italic text-white">${t.n}</span></div><button onclick="deleteTool(${t.id})" class="text-red-500 text-xs font-bold px-2">✕</button></div>`;
             });
         }
 
@@ -251,7 +269,12 @@
             location.reload();
         }
 
-        window.onload = () => { renderDiscs(); renderTools(); generarMision(); };
+        // --- INICIO REFORZADO PARA BLUEFY ---
+        window.onload = () => { 
+            renderDiscs(); 
+            renderTools(); 
+            setTimeout(generarMision, 100); // Pequeño delay para asegurar que el DOM esté listo
+        };
     </script>
 </body>
 </html>
