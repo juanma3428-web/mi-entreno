@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>APPLE COACH V29 - BlueFY Fix</title>
+    <title>APPLE COACH V30 - Smart Intelligence</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         body { background-color: #000; color: #fff; font-family: -apple-system, sans-serif; -webkit-tap-highlight-color: transparent; }
@@ -16,7 +16,6 @@
         .modal-overlay { background: rgba(0,0,0,0.9); display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 100; align-items: center; justify-content: center; padding: 20px; }
         .pulse { animation: pulse-red 2s infinite; }
         @keyframes pulse-red { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
-        /* Mejora para BlueFY: asegurar visibilidad del contenedor superior */
         #mision-container { min-height: 50px; display: block !important; opacity: 1 !important; }
     </style>
 </head>
@@ -25,7 +24,7 @@
     <div id="feedback-modal" class="modal-overlay">
         <div class="apple-card w-full border-apple-green">
             <h2 class="text-lg font-black italic uppercase mb-2 text-apple-green">Sesión Completada</h2>
-            <p class="text-[10px] text-gray-400 uppercase font-bold mb-6 italic">Ajuste de intensidad para el próximo día:</p>
+            <p id="resumen-sesion" class="text-[10px] text-gray-400 uppercase font-bold mb-6 italic"></p>
             <div class="grid grid-cols-1 gap-3">
                 <button onclick="saveFeedback(0.8)" class="bg-white/5 p-4 rounded-2xl border border-white/10 text-[10px] font-black uppercase italic text-white">Muy Ligero (Subir carga)</button>
                 <button onclick="saveFeedback(1.0)" class="bg-white/5 p-4 rounded-2xl border border-white/10 text-[10px] font-black uppercase italic text-apple-green">Intensidad Óptima</button>
@@ -36,8 +35,8 @@
 
     <div class="flex justify-between items-center mb-6 px-2">
         <div>
-            <h1 class="text-xl font-black italic tracking-tighter uppercase">APPLE COACH <span class="text-apple-green">V29</span></h1>
-            <p class="text-[8px] text-gray-500 font-black uppercase tracking-widest italic">Optimizado para BlueFY + Polar H10</p>
+            <h1 class="text-xl font-black italic tracking-tighter uppercase">APPLE COACH <span class="text-apple-green">V30</span></h1>
+            <p class="text-[8px] text-gray-500 font-black uppercase tracking-widest italic">Inteligencia BM 450 + Polar H10</p>
         </div>
         <div class="flex gap-2">
             <button onclick="toggleDrawer('drawer-tanita')" class="w-10 h-10 rounded-full bg-white/5 border border-white/10 flex items-center justify-center">⚖️</button>
@@ -45,12 +44,17 @@
         </div>
     </div>
 
-    <div id="mision-container" class="space-y-3 mb-8">
-        </div>
+    <div id="mision-container" class="space-y-3 mb-8"></div>
 
     <div class="apple-card border-l-4 border-red-600">
-        <div class="flex justify-between items-center mb-4">
-            <div id="display" class="text-6xl timer-font italic">00:00</div>
+        <div class="flex justify-between items-start mb-4">
+            <div>
+                <div id="display" class="text-6xl timer-font italic">00:00</div>
+                <div class="flex items-center gap-2 mt-1">
+                    <span id="kcal-val" class="text-lg font-bold text-orange-500 tracking-tighter">0</span>
+                    <p class="text-[8px] font-black text-gray-500 uppercase">Kcal Est.</p>
+                </div>
+            </div>
             <div class="text-right flex flex-col items-end">
                 <div class="flex items-center gap-2">
                     <span id="bpm-val" class="text-4xl font-bold text-red-500 tracking-tighter">--</span>
@@ -91,7 +95,7 @@
         </div>
 
         <div class="apple-card bg-black">
-            <p class="text-[9px] font-black text-gray-400 uppercase mb-4 italic">Herramientas de Entreno</p>
+            <p class="text-[9px] font-black text-gray-400 uppercase mb-4 italic">Herramientas Personalizadas</p>
             <input type="text" id="tn" class="w-full bg-[#1c1c1e] p-3 rounded-xl text-xs mb-2 border border-white/5" placeholder="Nombre">
             <div class="flex gap-2 mb-4">
                 <select id="tt" class="flex-1 bg-[#1c1c1e] p-3 rounded-xl text-xs text-gray-400">
@@ -107,16 +111,29 @@
     </div>
 
     <script>
-        let myTools = JSON.parse(localStorage.getItem('myToolsV29')) || [];
+        // BASE DE DATOS MAESTRA (MEMORIA DEL COACH)
+        const EJERCICIOS_MAESTROS = [
+            { id: 'm1', n: 'Polea Alta (Espalda)', t: 'bm450', w: 15 },
+            { id: 'm2', n: 'Press Pecho Sentado', t: 'bm450', w: 20 },
+            { id: 'm3', n: 'Extension Cuadriceps', t: 'bm450', w: 10 },
+            { id: 'm4', n: 'Contractor Pecho (Aperturas)', t: 'bm450', w: 10 },
+            { id: 'm5', n: 'Biceps Polea Baja', t: 'bm450', w: 5 },
+            { id: 'c1', n: 'Flexiones Diamante', t: 'calistenia', w: 0 },
+            { id: 'c2', n: 'Plancha Abdominal', t: 'calistenia', w: 0 },
+            { id: 'c3', n: 'Zancadas Dinámicas', t: 'calistenia', w: 0 },
+            { id: 'c4', n: 'Sentadilla Búlgara', t: 'calistenia', w: 0 }
+        ];
+
+        let myTools = JSON.parse(localStorage.getItem('myToolsV30')) || EJERCICIOS_MAESTROS;
         let myDiscs = JSON.parse(localStorage.getItem('myDiscsV29')) || [];
         let bodyComp = JSON.parse(localStorage.getItem('bodyComp')) || { peso: 75, grasa: 20, musculo: 35 };
         let history = JSON.parse(localStorage.getItem('trainingHistory')) || [];
         let intensityFactor = parseFloat(localStorage.getItem('intensityFactor')) || 1.0;
         
         let seg=0, crono=null, running=false, pausado=false;
-        let bluetoothDevice, heartRateCharacteristic;
+        let bluetoothDevice, heartRateCharacteristic, currentBPM = 0, totalKcal = 0;
 
-        // CONEXIÓN POLAR
+        // CONEXIÓN POLAR + CALCULO KCAL
         async function connectPolar() {
             try {
                 document.getElementById('polar-status').innerText = "Buscando...";
@@ -126,12 +143,26 @@
                 heartRateCharacteristic = await service.getCharacteristic('heart_rate_measurement');
                 await heartRateCharacteristic.startNotifications();
                 heartRateCharacteristic.addEventListener('characteristicvaluechanged', (e) => {
-                    document.getElementById('bpm-val').innerText = e.target.value.getUint8(1);
+                    currentBPM = e.target.value.getUint8(1);
+                    document.getElementById('bpm-val').innerText = currentBPM;
                     document.getElementById('bpm-val').classList.add('pulse');
                 });
                 document.getElementById('polar-status').innerText = "H10 Conectada";
                 document.getElementById('polar-status').classList.replace('text-gray-500', 'text-apple-green');
             } catch (error) { document.getElementById('polar-status').innerText = "Error"; }
+        }
+
+        function calculateKcal() {
+            if (currentBPM > 40 && running && !pausado) {
+                // Formula de Miller para gasto calórico basado en BPM, Peso y Tiempo
+                let genderFactor = -55.0969; // Promedio
+                let bpmCalc = (currentBPM * 0.6309);
+                let weightCalc = (bodyComp.peso * 0.1988);
+                let ageCalc = (40 * 0.2017); // Edad estimada 40
+                let total = (bpmCalc + weightCalc + ageCalc + genderFactor) / 4.184 / 60; 
+                totalKcal += Math.max(0, total);
+                document.getElementById('kcal-val').innerText = Math.round(totalKcal);
+            }
         }
 
         function toggleDrawer(id) { document.getElementById(id).classList.toggle('drawer-open'); }
@@ -143,44 +174,54 @@
             const maxFisico = getCapacidadMaxima();
             let repsExtra = 0, pesoFinal = tool.w;
 
-            if (tool.t === 'fuerza' && tool.w > maxFisico) { pesoFinal = maxFisico; repsExtra = Math.round((tool.w - maxFisico) * 0.5); }
-
-            if (tool.t === 'fuerza') {
+            // Lógica para BM 450 (Inteligencia de Discos)
+            if ((tool.t === 'fuerza' || tool.t === 'bm450') && tool.w > 0) {
+                if (tool.w > maxFisico) {
+                    pesoFinal = maxFisico;
+                    repsExtra = Math.round((tool.w - maxFisico) * 0.6);
+                }
                 const ratio = pesoFinal / (bodyComp.musculo || 35);
                 let final = Math.round(((ratio > 1.2 ? 6 : 10) + repsExtra) / intensityFactor);
-                return { reps: `${final}-${final+2} Reps`, carga: `${pesoFinal}kg (Límite Físico)` };
+                return { reps: `${final}-${final+2} Reps`, carga: `${pesoFinal}kg` };
             }
+            
             if (tool.t === 'calistenia') {
-                let final = Math.round((15 - racha) / intensityFactor);
-                return { reps: `${final}-${final+3} Reps`, carga: "Peso Corporal" };
+                let final = Math.round((12 + (bodyComp.musculo / 10) - (bodyComp.grasa / 5)) / intensityFactor);
+                return { reps: `${final}-${final+4} Reps`, carga: "Peso Corporal" };
             }
+            
             if (tool.t === 'cardio') {
-                let final = Math.round((bodyComp.grasa > 20 ? 40 : 25) / intensityFactor);
+                let final = Math.round((bodyComp.grasa > 20 ? 35 : 20) / intensityFactor);
                 return { reps: `${final} Min`, carga: "Cardio" };
             }
-            return { reps: "12", carga: "General" };
+            return { reps: "12 Reps", carga: "General" };
         }
 
-        // --- FIX BLUEFY: GENERACIÓN REFORZADA ---
         function generarMision() {
             const cont = document.getElementById('mision-container');
-            if (!cont) return;
-            
             let pool = myTools.filter(t => t.active !== false);
             if (pool.length === 0) {
-                cont.innerHTML = `<p class="text-[8px] text-center text-gray-600 uppercase italic">Configura tus herramientas para empezar</p>`;
+                cont.innerHTML = `<p class="text-[8px] text-center text-gray-600 uppercase italic">Añade herramientas o restaura la memoria</p>`;
                 return;
             }
 
             let htmlContent = '';
+            // Mezclamos pero priorizamos variedad: 1 de cada tipo si es posible
             pool.sort(() => 0.5 - Math.random()).slice(0, 3).forEach(t => {
                 const plan = calcularPlan(t);
                 const color = t.t === 'calistenia' ? 'border-blue-500' : (t.t === 'cardio' ? 'border-orange-500' : 'border-apple-green');
-                const labelReps = t.t === 'cardio' ? 'Tiempo' : 'Reps';
+                const badge = t.t === 'bm450' ? 'BM 450' : (t.t === 'calistenia' ? 'CASA' : 'EXTRA');
                 htmlContent += `
                     <div class="apple-card border-l-4 ${color} py-6 flex justify-between items-center bg-white/[0.02]">
-                        <div><h3 class="font-black text-sm uppercase italic text-white">${t.n}</h3><p class="text-[8px] text-gray-500 font-bold uppercase mt-1 italic">${plan.carga}</p></div>
-                        <div class="text-right"><p class="text-[14px] font-black italic text-apple-green">${plan.reps}</p><p class="text-[6px] text-gray-600 font-bold uppercase">${labelReps}</p></div>
+                        <div>
+                            <span class="text-[6px] bg-white/10 px-2 py-0.5 rounded-full font-black text-gray-400 mb-1 inline-block">${badge}</span>
+                            <h3 class="font-black text-sm uppercase italic text-white">${t.n}</h3>
+                            <p class="text-[8px] text-gray-500 font-bold uppercase mt-1 italic">${plan.carga}</p>
+                        </div>
+                        <div class="text-right">
+                            <p class="text-[14px] font-black italic text-apple-green">${plan.reps}</p>
+                            <p class="text-[6px] text-gray-600 font-bold uppercase">${t.t==='cardio'?'Tiempo':'Esfuerzo'}</p>
+                        </div>
                     </div>`;
             });
             cont.innerHTML = htmlContent;
@@ -213,19 +254,25 @@
 
         function toggleEntreno() {
             if(!running) {
-                running = true; pausado = false;
+                running = true; pausado = false; totalKcal = 0;
                 document.getElementById('btn-start').innerText = "FINALIZAR";
                 document.getElementById('btn-start').classList.replace('bg-apple-green', 'bg-red-600');
-                crono = setInterval(() => { if(!pausado) { seg++; updateDisp(); } }, 1000);
+                crono = setInterval(() => { 
+                    if(!pausado) { 
+                        seg++; updateDisp(); 
+                        if(seg % 2 === 0) calculateKcal(); 
+                    } 
+                }, 1000);
             } else {
                 clearInterval(crono);
+                document.getElementById('resumen-sesion').innerText = `HAS QUEMADO UNAS ${Math.round(totalKcal)} KCAL`;
                 document.getElementById('feedback-modal').style.display = 'flex';
             }
         }
 
         function saveFeedback(factor) {
             localStorage.setItem('intensityFactor', factor);
-            history.push(new Date().toDateString());
+            history.push({ date: new Date().toDateString(), kcal: totalKcal });
             localStorage.setItem('trainingHistory', JSON.stringify(history));
             location.reload();
         }
@@ -244,22 +291,33 @@
 
         function addTool() {
             const n = document.getElementById('tn').value, t = document.getElementById('tt').value, w = document.getElementById('tw').value || 0;
-            if(n) { myTools.push({id: Date.now(), n, t, w, active: true}); localStorage.setItem('myToolsV29', JSON.stringify(myTools)); renderTools(); generarMision(); }
+            if(n) { myTools.push({id: Date.now(), n, t, w: parseFloat(w), active: true}); localStorage.setItem('myToolsV30', JSON.stringify(myTools)); renderTools(); generarMision(); }
         }
 
         function renderTools() {
             const cont = document.getElementById('lista-herramientas'); cont.innerHTML = '';
-            myTools.forEach(t => {
-                cont.innerHTML += `<div class="flex justify-between items-center bg-white/5 p-4 rounded-xl mb-1 border border-white/5"><div class="flex items-center gap-3"><input type="checkbox" ${t.active!==false?'checked':''} onchange="toggleStatus(${t.id})" class="accent-apple-green w-4 h-4"><span class="text-[10px] font-bold uppercase italic text-white">${t.n}</span></div><button onclick="deleteTool(${t.id})" class="text-red-500 text-xs font-bold px-2">✕</button></div>`;
+            myTools.forEach((t, idx) => {
+                cont.innerHTML += `<div class="flex justify-between items-center bg-white/5 p-4 rounded-xl mb-1 border border-white/5">
+                    <div class="flex items-center gap-3">
+                        <input type="checkbox" ${t.active!==false?'checked':''} onchange="toggleStatus('${t.id || idx}')" class="accent-apple-green w-4 h-4">
+                        <span class="text-[10px] font-bold uppercase italic text-white">${t.n}</span>
+                    </div>
+                    <button onclick="deleteTool('${t.id || idx}')" class="text-red-500 text-xs font-bold px-2">✕</button>
+                </div>`;
             });
         }
 
         function toggleStatus(id) {
-            const tool = myTools.find(t => t.id === id); tool.active = !tool.active;
-            localStorage.setItem('myToolsV29', JSON.stringify(myTools)); generarMision();
+            const tool = myTools.find(t => (t.id || myTools.indexOf(t).toString()) === id.toString());
+            if(tool) tool.active = !tool.active;
+            localStorage.setItem('myToolsV30', JSON.stringify(myTools)); generarMision();
         }
 
-        function deleteTool(id) { myTools = myTools.filter(t => t.id !== id); localStorage.setItem('myToolsV29', JSON.stringify(myTools)); renderTools(); generarMision(); }
+        function deleteTool(id) {
+            myTools = myTools.filter(t => (t.id || myTools.indexOf(t).toString()) !== id.toString());
+            localStorage.setItem('myToolsV30', JSON.stringify(myTools)); 
+            renderTools(); generarMision();
+        }
 
         function saveTanita() {
             bodyComp.peso = document.getElementById('tan-p').value;
@@ -269,11 +327,10 @@
             location.reload();
         }
 
-        // --- INICIO REFORZADO PARA BLUEFY ---
         window.onload = () => { 
             renderDiscs(); 
             renderTools(); 
-            setTimeout(generarMision, 100); // Pequeño delay para asegurar que el DOM esté listo
+            setTimeout(generarMision, 150); 
         };
     </script>
 </body>
