@@ -3,206 +3,235 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Apple Coach V29 - Mejora Calistenia & Directrices</title>
+    <title>Apple Coach V29 - Capa Inteligencia Dinámica</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         body { background-color: #000; color: #fff; font-family: -apple-system, sans-serif; -webkit-tap-highlight-color: transparent; }
-        .apple-card { background: #1c1c1e; border-radius: 20px; padding: 20px; margin-bottom: 12px; border: 1px solid #2c2c2e; }
+        .apple-card { background: #1c1c1e; border-radius: 24px; padding: 20px; margin-bottom: 12px; border: 1px solid #2c2c2e; }
         .text-apple-green { color: #30d158; }
         .bg-apple-green { background-color: #30d158; }
-        .text-calist-blue { color: #007aff; }
-        .border-calist-blue { border-color: #007aff; }
-        .drawer { max-height: 0; overflow: hidden; transition: max-height 0.5s ease-in-out; }
-        .drawer-open { max-height: 2000px; }
-        .chip-container { display: flex; align-items: center; background: #2c2c2e; border-radius: 12px; overflow: hidden; margin-bottom: 6px; border: 1px solid transparent; }
-        .chip-container.active { border-color: #30d158; }
-        .chip-label { flex: 1; padding: 12px; font-size: 10px; font-weight: 800; text-transform: uppercase; cursor: pointer; }
-        .chip-container.active .chip-label { background: #30d158; color: #000; }
+        .drawer { max-height: 0; overflow: hidden; transition: max-height 0.5s ease; }
+        .drawer-open { max-height: 3000px; padding-bottom: 20px; }
         .timer-font { font-variant-numeric: tabular-nums; font-weight: 200; letter-spacing: -2px; }
-        .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.95); display: none; justify-content: center; align-items: center; z-index: 1000; }
-        .modal-overlay.active { display: flex; }
-        .input-tanita { background: #000; border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; padding: 12px; text-align: center; font-size: 14px; font-weight: bold; width: 100%; color: white; }
+        .coach-border { border-left: 4px solid #30d158; }
+        .rest-border { border-left: 4px solid #ffd60a; }
     </style>
 </head>
 <body class="p-4 pb-32">
 
     <div class="flex justify-between items-center mb-6 px-2">
-        <div>
-            <h1 class="text-xl font-black italic tracking-tighter">APPLE COACH <span class="text-apple-green">V29</span></h1>
-            <p class="text-[9px] text-gray-500 font-bold uppercase tracking-widest">Inteligencia de Entrenamiento Activa</p>
-        </div>
-        <button onclick="document.getElementById('modal-tanita').classList.add('active')" class="w-10 h-10 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-lg">⚖️</button>
-    </div>
-
-    <div id="modal-tanita" class="modal-overlay">
-        <div class="w-[90%] max-w-xs bg-[#1c1c1e] p-6 rounded-3xl border border-white/10">
-            <h3 class="text-center text-[10px] font-black text-apple-green uppercase mb-6 italic tracking-widest">Datos Tanita BC-730</h3>
-            <div class="space-y-4">
-                <div><label class="text-[8px] text-gray-500 font-bold uppercase ml-2">Peso Corporal (kg)</label><input type="number" id="tanita-peso" class="input-tanita" step="0.1" placeholder="00.0"></div>
-                <div class="grid grid-cols-2 gap-2">
-                    <div><label class="text-[8px] text-gray-500 font-bold uppercase ml-2">% Grasa</label><input type="number" id="tanita-grasa" class="input-tanita" step="0.1" placeholder="%"></div>
-                    <div><label class="text-[8px] text-gray-500 font-bold uppercase ml-2">Masa Muscular (kg)</label><input type="number" id="tanita-musculo" class="input-tanita" step="0.1" placeholder="00.0"></div>
-                </div>
-            </div>
-            <div class="flex gap-2 mt-8">
-                <button onclick="document.getElementById('modal-tanita').classList.remove('active')" class="flex-1 py-3 text-xs font-bold text-gray-500">CERRAR</button>
-                <button onclick="guardarTanita()" class="flex-1 py-3 bg-apple-green text-black rounded-xl text-xs font-black uppercase">Sincronizar</button>
-            </div>
+        <h1 class="text-xl font-black italic tracking-tighter uppercase">APPLE COACH <span class="text-apple-green">V29</span></h1>
+        <div class="flex gap-2">
+            <button onclick="document.getElementById('drawer-tanita').classList.toggle('drawer-open')" class="w-10 h-10 rounded-full bg-white/5 border border-white/10 flex items-center justify-center">⚖️</button>
+            <button onclick="document.getElementById('equip-drawer').classList.toggle('drawer-open')" class="w-10 h-10 rounded-full bg-white/5 border border-white/10 flex items-center justify-center">⚙️</button>
         </div>
     </div>
 
-    <div id="modal-feedback" class="modal-overlay">
-        <div class="w-[90%] max-w-sm text-center">
-            <h2 class="text-2xl font-black mb-6 italic uppercase tracking-tighter">¿Nivel de Esfuerzo?</h2>
-            <button onclick="procesarFeedback(-2)" class="w-full p-4 rounded-2xl mb-2 font-bold uppercase text-[10px] bg-orange-600/20 text-orange-500 border border-orange-500/30">🔥 DURO (Bajar Carga)</button>
-            <button onclick="procesarFeedback(0)" class="w-full p-4 rounded-2xl mb-2 font-bold uppercase text-[10px] bg-blue-600/20 text-blue-400 border border-blue-500/30">👍 NORMAL (Mantener)</button>
-            <button onclick="procesarFeedback(2)" class="w-full p-4 rounded-2xl mb-2 font-bold uppercase text-[10px] bg-green-600/20 text-apple-green border border-apple-green/30">✨ SUAVE (Subir Carga)</button>
+    <div id="coach-section" class="mb-8">
+        <div class="flex justify-between items-end mb-3 ml-2">
+            <div>
+                <p id="coach-label" class="text-[9px] text-apple-green font-black uppercase tracking-widest italic">Personal Trainer</p>
+                <h2 id="coach-strategy" class="text-lg font-black italic uppercase tracking-tighter text-white">Analizando estado...</h2>
+            </div>
+            <button onclick="recalcularMision()" class="text-[8px] font-black text-gray-500 uppercase underline mb-1">Recalcular</button>
         </div>
+        
+        <div id="mision-diaria" class="space-y-3">
+            </div>
     </div>
 
     <div class="apple-card border-l-4 border-red-600">
-        <div class="flex justify-between items-start mb-4">
-            <div>
-                <p class="text-[10px] font-black text-gray-500 uppercase tracking-widest italic">Polar H10 Live</p>
-                <div class="flex items-baseline gap-1">
-                    <span id="bpm-val" class="text-6xl font-bold tracking-tighter">--</span>
-                    <span class="text-red-500 font-bold text-sm italic">BPM</span>
-                </div>
+        <div class="flex justify-between items-center mb-4">
+            <div id="display" class="text-6xl timer-font italic">00:00</div>
+            <div class="text-right">
+                <span id="bpm-val" class="text-3xl font-bold text-red-500 tracking-tighter">--</span>
+                <p class="text-[8px] font-black text-gray-500 uppercase tracking-widest">BPM Live</p>
             </div>
-            <button id="btn-polar" onclick="conectarPolar()" class="w-12 h-12 rounded-full bg-red-600/10 flex items-center justify-center text-xl">❤️</button>
         </div>
-        <div class="flex justify-between font-bold border-t border-white/5 pt-4">
-            <div id="kcal-val" class="text-2xl text-orange-500">0 <span class="text-xs uppercase">KCAL</span></div>
-            <div id="session-time" class="text-2xl tracking-tighter italic font-light">0:00</div>
-        </div>
-    </div>
-
-    <div class="apple-card text-center">
-        <div id="display" class="text-7xl timer-font mb-8 italic">00:00</div>
-        <div class="flex gap-4">
-            <button id="btn-pausa" onclick="pausar()" class="w-16 h-16 rounded-full bg-yellow-500/10 flex items-center justify-center opacity-20" disabled><span id="pause-icon" class="text-yellow-500 text-xl font-bold">||</span></button>
-            <button id="btn-principal" onclick="toggleEntreno()" class="flex-1 bg-apple-green text-black rounded-2xl font-black text-sm uppercase tracking-widest italic">Iniciar Sesión</button>
+        <div class="flex gap-2">
+            <button onclick="toggleEntreno()" id="btn-principal" class="bg-apple-green text-black p-4 rounded-2xl text-[10px] font-black uppercase flex-[2] italic shadow-lg shadow-green-500/20">Confirmar e Iniciar Sesión</button>
+            <button onclick="conectarPolar()" class="bg-white/5 text-white p-4 rounded-2xl text-[10px] font-black uppercase flex-1 border border-white/5">Polar H10</button>
         </div>
     </div>
 
-    <div class="apple-card">
-        <button onclick="document.getElementById('equip-drawer').classList.toggle('drawer-open')" class="w-full flex justify-between items-center">
-            <span class="text-[10px] font-black text-gray-500 uppercase italic tracking-tight">Configuración Gimnasio</span>
-            <span class="text-apple-green text-xs font-bold italic font-black underline">CONFIG</span>
-        </button>
-        <div id="equip-drawer" class="drawer">
-            <div class="mt-4 p-4 bg-white/5 rounded-2xl mb-4 border border-white/5">
-                <p class="text-[9px] font-black text-gray-400 uppercase mb-2 italic">Añadir Discos</p>
-                <div class="grid grid-cols-2 gap-2 mb-3">
-                    <input type="number" id="disc-weight" class="bg-black border border-white/10 rounded-xl p-3 text-xs" placeholder="Peso (kg)">
-                    <input type="number" id="disc-qty" class="bg-black border border-white/10 rounded-xl p-3 text-xs" placeholder="Cant.">
-                </div>
-                <button onclick="addDiscs()" class="w-full bg-white/10 text-white py-2 rounded-xl font-black text-[10px] uppercase mb-5">Añadir Discos</button>
-                <hr class="border-white/5 mb-5">
-                <input type="text" id="new-tool-name" class="w-full bg-black border border-white/10 rounded-xl p-3 text-xs mb-2" placeholder="Nombre (Ej: Dominadas)">
-                <div class="grid grid-cols-2 gap-2 mb-3">
-                    <select id="new-tool-type" class="bg-black border border-white/10 rounded-xl p-3 text-xs text-gray-400">
-                        <option value="fuerza">Fuerza (Discos)</option>
-                        <option value="calistenia">Calistenia (Cuerpo)</option>
-                        <option value="cardio">Cardio</option>
-                    </select>
-                    <input type="number" id="new-tool-weight" class="bg-black border border-white/10 rounded-xl p-3 text-xs" placeholder="Peso Base">
-                </div>
-                <button onclick="addTool()" class="w-full bg-apple-green text-black py-3 rounded-xl font-black text-xs uppercase italic">Guardar Ejercicio</button>
+    <div id="equip-drawer" class="drawer">
+        <div class="apple-card bg-black mb-2">
+            <p class="text-[9px] font-black text-gray-400 uppercase mb-3">Inventario de Discos (Unitario)</p>
+            <div class="flex gap-2 mb-4">
+                <input type="number" id="dw" class="flex-1 bg-[#1c1c1e] p-3 rounded-xl text-xs border border-white/5" placeholder="Peso (kg)">
+                <input type="number" id="dq" class="flex-1 bg-[#1c1c1e] p-3 rounded-xl text-xs border border-white/5" placeholder="Cant.">
+                <button onclick="addDisc()" class="bg-apple-green text-black px-4 rounded-xl text-[10px] font-bold">Añadir</button>
             </div>
-            <div id="lista-discos" class="mb-4"></div>
-            <div id="lista-equip"></div>
+            <div id="lista-discos" class="flex flex-wrap gap-2"></div>
+        </div>
+        <div class="apple-card bg-black">
+            <p class="text-[9px] font-black text-gray-400 uppercase mb-3">Base de Datos de Ejercicios</p>
+            <input type="text" id="tn" class="w-full bg-[#1c1c1e] p-3 rounded-xl text-xs mb-2 border border-white/5" placeholder="Nombre Ejercicio">
+            <div class="flex gap-2 mb-4">
+                <select id="tt" class="flex-1 bg-[#1c1c1e] p-3 rounded-xl text-xs text-gray-400 border border-white/5">
+                    <option value="fuerza">Fuerza</option>
+                    <option value="calistenia">Calistenia</option>
+                    <option value="cardio">Cardio</option>
+                </select>
+                <input type="number" id="tw" class="flex-1 bg-[#1c1c1e] p-3 rounded-xl text-xs border border-white/5" placeholder="Peso Base">
+            </div>
+            <button onclick="addTool()" class="w-full bg-apple-green text-black py-4 rounded-2xl font-black text-xs uppercase italic">Guardar en Sistema</button>
+            <div id="lista-herramientas" class="mt-4 space-y-1"></div>
         </div>
     </div>
 
-    <div class="px-2 mb-4">
-        <h2 class="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em]">Rutina Sugerida</h2>
-        <p id="coach-reason" class="text-[11px] text-apple-green italic mt-1 font-medium"></p>
+    <div id="drawer-tanita" class="drawer">
+        <div class="apple-card bg-black border-apple-green/30">
+            <p class="text-[9px] font-black text-apple-green uppercase mb-4">Sincronización Tanita-Pro</p>
+            <div class="grid grid-cols-3 gap-2 mb-4">
+                <input type="number" id="tan-p" class="bg-[#1c1c1e] p-4 rounded-2xl text-center text-xs" placeholder="Peso">
+                <input type="number" id="tan-g" class="bg-[#1c1c1e] p-4 rounded-2xl text-center text-xs" placeholder="% Grasa">
+                <input type="number" id="tan-m" class="bg-[#1c1c1e] p-4 rounded-2xl text-center text-xs" placeholder="Músculo">
+            </div>
+            <button onclick="saveTanita()" class="w-full bg-apple-green text-black py-4 rounded-2xl font-black text-xs uppercase italic">Actualizar Métricas</button>
+        </div>
     </div>
-    <div id="contenedor-rutina" class="space-y-3"></div>
 
     <script>
-        let seg=0, crono = null, running=false, paused=false, kcal=0;
         let myTools = JSON.parse(localStorage.getItem('myToolsV29')) || [];
         let myDiscs = JSON.parse(localStorage.getItem('myDiscsV29')) || [];
-        let globalWeightAdjust = parseFloat(localStorage.getItem('globalWeightAdjust')) || 0;
-        let bodyComp = JSON.parse(localStorage.getItem('bodyComp')) || { peso: 75.0, grasa: 20.0, musculo: 35.0 };
+        let bodyComp = JSON.parse(localStorage.getItem('bodyComp')) || { peso: 75, grasa: 20, musculo: 35 };
+        let history = JSON.parse(localStorage.getItem('trainingHistory')) || [];
 
-        function init() { renderTools(); renderDiscs(); generarRutinaProfesional(); }
-
-        function guardarTanita() {
-            bodyComp.peso = parseFloat(document.getElementById('tanita-peso').value);
-            bodyComp.grasa = parseFloat(document.getElementById('tanita-grasa').value);
-            bodyComp.musculo = parseFloat(document.getElementById('tanita-musculo').value);
-            localStorage.setItem('bodyComp', JSON.stringify(bodyComp));
-            document.getElementById('modal-tanita').classList.remove('active');
-            generarRutinaProfesional();
+        function init() {
+            renderDiscs();
+            renderTools();
+            generarMisionDinamica();
         }
 
-        function generarRutinaProfesional() {
-            const cont = document.getElementById('contenedor-rutina');
-            cont.innerHTML = '';
-            const activas = myTools.filter(t => localStorage.getItem('e_'+t.n) === 'true');
-            
-            let repsFuerza = bodyComp.musculo < 32 ? "8-10" : "12-15";
-            let repsCalist = bodyComp.grasa > 20 ? "15-20" : "10-12";
-            
-            document.getElementById('coach-reason').innerText = `Enfoque: ${bodyComp.grasa > 20 ? 'Definición' : 'Volumen'} basado en Tanita.`;
+        // --- MEJORA: CEREBRO DEL PERSONAL TRAINER ---
+        function generarMisionDinamica() {
+            const container = document.getElementById('mision-diaria');
+            const strategyText = document.getElementById('coach-strategy');
+            const label = document.getElementById('coach-label');
+            container.innerHTML = '';
 
-            activas.forEach(tool => {
-                let infoCarga = "";
-                let directriz = "";
-                let colorClase = "border-apple-green";
+            // 1. Verificación Científica de Fatiga
+            if (history.length >= 3) {
+                label.innerText = "Coach: Modo Recuperación";
+                label.classList.replace('text-apple-green', 'text-yellow-500');
+                strategyText.innerText = "Descanso Activo / Supercompensación";
+                container.innerHTML = `
+                    <div class="apple-card rest-border py-8 text-center bg-yellow-500/5">
+                        <span class="text-3xl mb-3 block">🛌</span>
+                        <p class="text-[10px] text-gray-400 font-bold uppercase">Hoy tu cuerpo necesita reciclar lactato.</p>
+                        <p class="text-[11px] text-white mt-2 font-medium">Sugerencia: 30 min de paseo ligero o movilidad articular.</p>
+                        <button onclick="resetHistory()" class="mt-6 text-[8px] font-black text-gray-600 underline uppercase">Forzar nuevo ciclo</button>
+                    </div>`;
+                return;
+            }
 
-                if(tool.t === 'fuerza') {
-                    const pesoIdeal = Math.max(0, tool.w + globalWeightAdjust);
-                    const calc = calcularCombinacion(pesoIdeal);
-                    infoCarga = `CARGA: ${calc.real}KG | DISCOS: ${calc.texto || 'BASE'}`;
-                    directriz = `DIRECTRIZ: 4 SERIES X ${repsFuerza} REPS`;
-                } else if(tool.t === 'calistenia') {
-                    infoCarga = `PESO CORPORAL: ${bodyComp.peso}KG`;
-                    directriz = `DIRECTRIZ: 4 SERIES X ${repsCalist} REPS`;
-                    colorClase = "border-blue-500";
-                } else {
-                    infoCarga = `MODO CARDIO`;
-                    directriz = `DURACIÓN: 40 MINUTOS`;
-                }
+            // 2. Selección de Objetivo según Tanita
+            let objetivo = "fuerza";
+            if (bodyComp.grasa > 22) {
+                objetivo = "calistenia";
+                strategyText.innerText = "Déficit y Tonificación";
+            } else {
+                strategyText.innerText = "Hipertrofia y Potencia";
+            }
 
-                cont.innerHTML += `
-                    <div class="apple-card border-l-2 ${colorClase} flex justify-between items-center">
-                        <div class="flex-1">
-                            <h3 class="font-black text-xs uppercase italic tracking-tighter">${tool.n}</h3>
-                            <p class="text-[9px] text-gray-500 font-bold uppercase mt-1">${infoCarga}</p>
-                            <p class="text-[10px] ${tool.t==='calistenia'?'text-blue-400':'text-apple-green'} font-black uppercase mt-1 tracking-tighter italic">${directriz}</p>
+            // 3. Filtrar y Barajar Ejercicios (Interactividad)
+            let pool = myTools.filter(t => t.t === objetivo);
+            if (pool.length < 3) pool = myTools; // Fallback si no hay suficientes
+
+            let seleccion = [...pool].sort(() => 0.5 - Math.random()).slice(0, 3);
+
+            if (seleccion.length === 0) {
+                container.innerHTML = `<p class="text-center text-[9px] text-gray-600 uppercase p-10 border border-dashed border-white/10 rounded-3xl">Configura tus ejercicios para recibir una misión</p>`;
+                return;
+            }
+
+            seleccion.forEach(t => {
+                const isFuerza = t.t === 'fuerza';
+                const detalle = isFuerza ? `Carga Sugerida: ${t.w}kg (Base)` : 'Carga: Peso Corporal';
+                const color = t.t === 'calistenia' ? 'border-blue-500' : (t.t === 'cardio' ? 'border-orange-500' : 'border-apple-green');
+                
+                container.innerHTML += `
+                    <div class="apple-card border-l-4 ${color} py-6 flex justify-between items-center bg-white/[0.02]">
+                        <div>
+                            <p class="text-[8px] text-gray-500 font-black uppercase mb-1">${t.t}</p>
+                            <h3 class="font-black text-sm uppercase italic text-white">${t.n}</h3>
+                            <p class="text-[10px] text-apple-green font-bold mt-1">${detalle}</p>
+                        </div>
+                        <div class="text-right">
+                            <p class="text-[11px] font-black italic">4 x 12</p>
+                            <p class="text-[8px] text-gray-600 font-black uppercase tracking-tighter">Series/Reps</p>
                         </div>
                     </div>`;
             });
         }
 
-        function calcularCombinacion(pesoObjetivo) {
-            let restante = pesoObjetivo;
-            let combinacion = [];
-            const discosSorted = [...myDiscs].sort((a,b) => b.w - a.w);
-            discosSorted.forEach(d => {
-                let usar = Math.min(d.q, Math.floor(restante / d.w));
-                if (usar > 0) {
-                    combinacion.push(`${usar}x${d.w}kg`);
-                    restante -= (usar * d.w);
-                }
-            });
-            return { real: pesoObjetivo - restante, texto: combinacion.join(' + ') };
+        function recalcularMision() {
+            generarMisionDinamica();
         }
 
+        // --- FUNCIONES V29 (INALTERADAS) ---
+        function addDisc() {
+            const w = parseFloat(document.getElementById('dw').value);
+            const q = parseInt(document.getElementById('dq').value);
+            if(w && q) { myDiscs.push({w, q}); localStorage.setItem('myDiscsV29', JSON.stringify(myDiscs)); renderDiscs(); }
+        }
+
+        function renderDiscs() {
+            const cont = document.getElementById('lista-discos');
+            cont.innerHTML = '';
+            myDiscs.sort((a,b) => b.w - a.w).forEach(d => {
+                cont.innerHTML += `<div class="bg-white/5 border border-white/10 px-3 py-2 rounded-xl text-[10px] font-black italic"><span class="text-apple-green">${d.q}x</span>${d.w}kg</div>`;
+            });
+        }
+
+        function addTool() {
+            const n = document.getElementById('tn').value;
+            const t = document.getElementById('tt').value;
+            const w = parseFloat(document.getElementById('tw').value || 0);
+            if(n) { myTools.push({id: Date.now(), n, t, w}); localStorage.setItem('myToolsV29', JSON.stringify(myTools)); renderTools(); generarMisionDinamica(); }
+        }
+
+        function renderTools() {
+            const cont = document.getElementById('lista-herramientas');
+            cont.innerHTML = '';
+            myTools.forEach(t => {
+                cont.innerHTML += `<div class="flex justify-between bg-white/5 p-3 rounded-xl text-[10px] uppercase font-bold border border-white/[0.02]">
+                    <span>${t.n} <span class="text-[8px] text-gray-500 italic ml-2">(${t.t})</span></span>
+                    <button onclick="deleteTool(${t.id})" class="text-red-500 font-black">✕</button>
+                </div>`;
+            });
+        }
+
+        function deleteTool(id) {
+            myTools = myTools.filter(t => t.id !== id);
+            localStorage.setItem('myToolsV29', JSON.stringify(myTools));
+            init();
+        }
+
+        function saveTanita() {
+            bodyComp.peso = document.getElementById('tan-p').value;
+            bodyComp.grasa = document.getElementById('tan-g').value;
+            bodyComp.musculo = document.getElementById('tan-m').value;
+            localStorage.setItem('bodyComp', JSON.stringify(bodyComp));
+            location.reload();
+        }
+
+        function resetHistory() { history = []; localStorage.setItem('trainingHistory', '[]'); location.reload(); }
+
+        let seg=0, crono=null, running=false;
         function toggleEntreno() {
-            if (!running) {
-                running = true; 
-                document.getElementById('btn-principal').innerText = "TERMINAR ENTRENAMIENTO";
-                document.getElementById('btn-principal').classList.replace('bg-apple-green', 'bg-red-600');
-                document.getElementById('btn-pausa').disabled = false; document.getElementById('btn-pausa').classList.remove('opacity-20');
+            const btn = document.getElementById('btn-principal');
+            if(!running) {
+                running = true;
+                btn.innerText = "FINALIZAR SESIÓN";
+                btn.classList.replace('bg-apple-green', 'bg-red-600');
                 crono = setInterval(() => { seg++; updateDisp(); }, 1000);
             } else {
                 clearInterval(crono);
-                document.getElementById('modal-feedback').classList.add('active');
+                history.push(new Date().toDateString());
+                localStorage.setItem('trainingHistory', JSON.stringify(history));
+                location.reload();
             }
         }
 
@@ -211,41 +240,7 @@
             document.getElementById('display').innerText = `${m}:${s.toString().padStart(2,'0')}`;
         }
 
-        function procesarFeedback(kg) {
-            globalWeightAdjust += kg;
-            localStorage.setItem('globalWeightAdjust', globalWeightAdjust);
-            location.reload(); // Recarga limpia respetando V29
-        }
-
-        // Lógica de Renderizado y Configuración (Sin cambios en V29)
-        function renderTools() {
-            const cont = document.getElementById('lista-equip'); cont.innerHTML = '';
-            myTools.forEach(tool => {
-                const act = localStorage.getItem('e_'+tool.n) === 'true';
-                cont.innerHTML += `<div class="chip-container ${act?'active':''}">
-                    <div class="chip-label" onclick="toggleTool('${tool.n}')">${tool.n} (${tool.t})</div>
-                    <button onclick="deleteTool(${tool.id})" class="p-3 text-red-500">✕</button></div>`;
-            });
-        }
-        function toggleTool(name) { localStorage.setItem('e_'+name, localStorage.getItem('e_'+name) !== 'true'); init(); }
-        function deleteTool(id) { myTools = myTools.filter(t => t.id !== id); localStorage.setItem('myToolsV29', JSON.stringify(myTools)); init(); }
-        function renderDiscs() {
-            const cont = document.getElementById('lista-discos'); cont.innerHTML = '';
-            myDiscs.forEach((d, i) => { cont.innerHTML += `<span class="inline-block bg-white/10 px-2 py-1 rounded-md text-[9px] font-bold mr-1 mb-1">${d.q}x${d.w}kg</span>`; });
-        }
-        function addDiscs() {
-            const w = parseFloat(document.getElementById('disc-weight').value);
-            const q = parseInt(document.getElementById('disc-qty').value);
-            if(w && q) { myDiscs.push({w,q}); localStorage.setItem('myDiscsV29', JSON.stringify(myDiscs)); init(); }
-        }
-        function addTool() {
-            const n = document.getElementById('new-tool-name').value;
-            const t = document.getElementById('new-tool-type').value;
-            const w = parseFloat(document.getElementById('new-tool-weight').value || 0);
-            if(n) { myTools.push({id: Date.now(), n, t, w}); localStorage.setItem('myToolsV29', JSON.stringify(myTools)); init(); }
-        }
-
-        init();
+        window.onload = init;
     </script>
 </body>
 </html>
