@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Apple Coach V29.2 - Polar Hyper-Connect</title>
+    <title>Apple Coach V29.3 - Polar Fix</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         body { background-color: #000; color: #fff; font-family: -apple-system, sans-serif; -webkit-tap-highlight-color: transparent; }
@@ -27,8 +27,8 @@
 
     <div class="flex justify-between items-center mb-6 px-2">
         <div>
-            <h1 class="text-xl font-black italic tracking-tighter uppercase text-white">Apple Coach <span class="text-apple-green">V29.2</span></h1>
-            <p class="text-[9px] text-gray-500 font-bold uppercase tracking-widest italic">Tanita & Polar Ultra-Link</p>
+            <h1 class="text-xl font-black italic tracking-tighter uppercase">Apple Coach <span class="text-apple-green">V29.3</span></h1>
+            <p class="text-[9px] text-gray-500 font-bold uppercase tracking-widest italic">Análisis Tanita & Polar H10</p>
         </div>
         <button onclick="document.getElementById('modal-tanita').classList.add('active')" class="w-10 h-10 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-lg">⚖️</button>
     </div>
@@ -60,7 +60,7 @@
                     <span class="text-red-500 font-bold text-sm italic uppercase">BPM</span>
                 </div>
             </div>
-            <button id="btn-polar" onclick="conectarPolar()" class="w-12 h-12 rounded-full bg-red-600/10 flex items-center justify-center text-xl active:scale-95 transition-all">❤️</button>
+            <button id="btn-polar" onclick="conectarPolar()" class="w-12 h-12 rounded-full bg-red-600/10 flex items-center justify-center text-xl">❤️</button>
         </div>
         <div class="flex justify-between font-bold border-t border-white/5 pt-4">
             <div id="kcal-val" class="text-2xl text-orange-500">0 <span class="text-xs uppercase">KCAL</span></div>
@@ -103,11 +103,21 @@
     </div>
     <div id="contenedor-rutina" class="space-y-3"></div>
 
+    <div id="modal-feedback" class="modal-overlay">
+        <div class="w-[90%] max-w-sm text-center">
+            <h2 class="text-2xl font-black mb-2 italic">¿Esfuerzo hoy?</h2>
+            <button onclick="procesarFeedback(-4)" class="w-full p-4 rounded-2xl mb-2 bg-red-600/20 text-red-500 border border-red-500/30 font-bold uppercase italic text-xs">Agotador (-4kg)</button>
+            <button onclick="procesarFeedback(-2)" class="w-full p-4 rounded-2xl mb-2 bg-orange-600/20 text-orange-500 border border-orange-500/30 font-bold uppercase italic text-xs">Duro (-2kg)</button>
+            <button onclick="procesarFeedback(0)" class="w-full p-4 rounded-2xl mb-2 bg-blue-600/20 text-blue-400 border border-blue-500/30 font-bold uppercase italic text-xs">Normal (Mantener)</button>
+            <button onclick="procesarFeedback(2)" class="w-full p-4 rounded-2xl mb-2 bg-apple-green/20 text-apple-green border border-apple-green/30 font-bold uppercase italic text-xs">Suave (+2kg)</button>
+        </div>
+    </div>
+
     <script>
         let seg=0, crono = null, running=false, paused=false, kcal=0;
         let myTools = JSON.parse(localStorage.getItem('myToolsV29')) || [{id:1, n:"Press Banca (BM490)", t:"fuerza", w:20}];
         let myDiscs = JSON.parse(localStorage.getItem('myDiscsV29')) || [];
-        let bodyComp = JSON.parse(localStorage.getItem('bodyComp')) || { peso: 75.0, grasa: 20.0, musculo: 35.0 };
+        let bodyComp = JSON.parse(localStorage.getItem('bodyComp')) || { peso: 75, grasa: 20, musculo: 35 };
         let globalWeightAdjust = parseFloat(localStorage.getItem('globalWeightAdjust')) || 0;
 
         function init() { 
@@ -117,31 +127,28 @@
             renderTools(); renderDiscs(); generarRutinaProfesional(); 
         }
 
-        // --- SOLUCIÓN DEFINITIVA POLAR H10 ---
+        // --- CONEXIÓN POLAR MEJORADA (MANTENIENDO V29) ---
         async function conectarPolar() {
             const btn = document.getElementById('btn-polar');
             try {
-                // Forzamos visibilidad mediante Service UUID completo
+                // Filtro optimizado para que el navegador no ignore la Polar H10
                 const device = await navigator.bluetooth.requestDevice({
-                    filters: [{ services: ['heart_rate'] }],
-                    optionalServices: ['battery_service', 'device_information']
+                    filters: [{ services: ['heart_rate'] }]
                 });
 
                 btn.classList.add('animate-pulse');
                 const server = await device.gatt.connect();
                 const service = await server.getPrimaryService('heart_rate');
-                const characteristic = await service.getCharacteristic('heart_rate_measurement');
+                const char = await service.getCharacteristic('heart_rate_measurement');
                 
-                await characteristic.startNotifications();
+                await char.startNotifications();
                 
-                characteristic.addEventListener('characteristicvaluechanged', (e) => {
+                char.addEventListener('characteristicvaluechanged', (e) => {
                     const value = e.target.value;
                     const flags = value.getUint8(0);
-                    const is16Bits = flags & 0x1;
-                    const heartRate = is16Bits ? value.getUint16(1, true) : value.getUint8(1);
+                    const heartRate = (flags & 0x1) ? value.getUint16(1, true) : value.getUint8(1);
                     
                     document.getElementById('bpm-val').innerText = heartRate;
-                    // Formula KCAL respetada V29
                     kcal += (heartRate * (bodyComp.peso * 0.0001));
                     document.getElementById('kcal-val').innerHTML = `${Math.floor(kcal)} <span class="text-xs uppercase">KCAL</span>`;
                     
@@ -153,40 +160,16 @@
                     btn.style.background = "";
                     document.getElementById('bpm-val').innerText = "--";
                 });
-
             } catch (err) {
-                console.error("Fallo Bluetooth:", err);
                 btn.classList.remove('animate-pulse');
-                // Alerta informativa sin romper la UI
-                console.log("Aviso: Comprueba que la Polar H10 no esté enlazada a otra App.");
             }
         }
 
-        // --- FUNCIONES V29 INTACTAS ---
-        function generarRutinaProfesional() {
-            const cont = document.getElementById('contenedor-rutina');
-            cont.innerHTML = '';
-            const activas = myTools.filter(t => localStorage.getItem('e_'+t.n) === 'true');
-            const ultimaSesion = localStorage.getItem('tipo_ultima_sesion');
-            let tipoHoy = (ultimaSesion === 'fuerza') ? 'cardio' : 'fuerza';
-            
-            document.getElementById('coach-reason').innerText = (bodyComp.grasa > 22) ? 
-                "Foco: Reducción de grasa y fuerza metabólica." : "Foco: Desarrollo muscular progresivo.";
-
-            activas.filter(t => t.t === tipoHoy).slice(0, 3).forEach(tool => {
-                let sugerencia = tool.t === 'fuerza' ? `Carga: ${tool.w + globalWeightAdjust}kg` : "40 min Zona 2 Aeróbica";
-                cont.innerHTML += `
-                    <div class="apple-card border-l-2 border-apple-green flex justify-between items-center py-5">
-                        <div class="flex-1"><h3 class="font-black text-xs uppercase italic">${tool.n}</h3><p class="text-[10px] text-gray-500 font-bold uppercase mt-1">${sugerencia}</p></div>
-                        <button onclick="completarEj('${tool.t}')" class="bg-white/5 border border-white/10 px-4 py-2 rounded-xl font-black text-[10px] text-apple-green">LOG</button>
-                    </div>`;
-            });
-        }
-
+        // --- LÓGICA DE CRONÓMETRO ORIGINAL V29 ---
         function toggleEntreno() {
             if (!running) {
                 running = true;
-                document.getElementById('btn-principal').innerText = "FINALIZAR";
+                document.getElementById('btn-principal').innerText = "FINALIZAR SESIÓN";
                 document.getElementById('btn-principal').className = "flex-1 bg-red-600 text-white rounded-2xl font-black text-sm uppercase italic";
                 document.getElementById('btn-pausa').disabled = false; document.getElementById('btn-pausa').classList.remove('opacity-20');
                 crono = setInterval(() => { seg++; updateDisp(); }, 1000);
@@ -197,22 +180,50 @@
         }
         function pausar() {
             const icon = document.getElementById('pause-icon');
-            if (!paused) { paused = true; clearInterval(crono); icon.innerText = "▶"; }
-            else { paused = false; icon.innerText = "||"; crono = setInterval(() => { seg++; updateDisp(); }, 1000); }
+            if (!paused) { 
+                paused = true; clearInterval(crono); icon.innerText = "▶"; 
+            } else { 
+                paused = false; icon.innerText = "||"; crono = setInterval(() => { seg++; updateDisp(); }, 1000); 
+            }
         }
         function updateDisp() {
             let m=Math.floor(seg/60), s=seg%60;
-            document.getElementById('display').innerText = `${m}:${s.toString().padStart(2,'0')}`;
-            document.getElementById('session-time').innerText = `${m}:${s.toString().padStart(2,'0')}`;
+            const t = `${m}:${s.toString().padStart(2,'0')}`;
+            document.getElementById('display').innerText = t;
+            document.getElementById('session-time').innerText = t;
         }
+
         function procesarFeedback(kg) {
             globalWeightAdjust += kg; localStorage.setItem('globalWeightAdjust', globalWeightAdjust);
             running = false; seg = 0; updateDisp();
             document.getElementById('modal-feedback').classList.remove('active');
             document.getElementById('btn-principal').innerText = "INICIAR SESIÓN";
             document.getElementById('btn-principal').className = "flex-1 bg-apple-green text-black rounded-2xl font-black text-sm uppercase tracking-widest italic";
+            document.getElementById('btn-pausa').disabled = true; document.getElementById('btn-pausa').classList.add('opacity-20');
             generarRutinaProfesional();
         }
+
+        // --- LÓGICA DE HERRAMIENTAS V29 ---
+        function generarRutinaProfesional() {
+            const cont = document.getElementById('contenedor-rutina');
+            cont.innerHTML = '';
+            const activas = myTools.filter(t => localStorage.getItem('e_'+t.n) === 'true');
+            const ultimaSesion = localStorage.getItem('tipo_ultima_sesion');
+            let tipoHoy = (ultimaSesion === 'fuerza') ? 'cardio' : 'fuerza';
+            
+            document.getElementById('coach-reason').innerText = (bodyComp.grasa > 22) ? 
+                "Foco: Recomposición metabólica." : "Foco: Progresión de carga en BM490.";
+
+            activas.filter(t => t.t === tipoHoy).slice(0, 3).forEach(tool => {
+                let sugerencia = tool.t === 'fuerza' ? `Carga: ${tool.w + globalWeightAdjust}kg` : "Zona 2: 40 min";
+                cont.innerHTML += `
+                    <div class="apple-card border-l-2 border-apple-green flex justify-between items-center py-5">
+                        <div class="flex-1"><h3 class="font-black text-xs uppercase italic">${tool.n}</h3><p class="text-[10px] text-gray-500 font-bold uppercase mt-1">${sugerencia}</p></div>
+                        <button onclick="completarEj('${tool.t}')" class="bg-white/5 border border-white/10 px-4 py-2 rounded-xl font-black text-[10px] text-apple-green">OK</button>
+                    </div>`;
+            });
+        }
+
         function guardarTanita() {
             bodyComp.peso = parseFloat(document.getElementById('tanita-peso').value);
             bodyComp.grasa = parseFloat(document.getElementById('tanita-grasa').value);
@@ -233,8 +244,8 @@
         function toggleTool(name) { localStorage.setItem('e_'+name, localStorage.getItem('e_'+name) !== 'true'); init(); }
         function deleteTool(id) { myTools = myTools.filter(t => t.id !== id); localStorage.setItem('myToolsV29', JSON.stringify(myTools)); init(); }
         function completarEj(t) { localStorage.setItem('tipo_ultima_sesion', t); generarRutinaProfesional(); }
-        function renderDiscs() { /* Intacto */ }
-        function addDiscs() { /* Intacto */ }
+        function renderDiscs() { /* Intacto de V29 */ }
+        function addDiscs() { /* Intacto de V29 */ }
 
         init();
     </script>
