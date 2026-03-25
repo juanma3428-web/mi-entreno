@@ -3,19 +3,18 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Apple Coach V29 - Achievement Edition</title>
+    <title>Apple Coach V29 - Stable Edition</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         body { background-color: #000; color: #fff; font-family: -apple-system, sans-serif; -webkit-tap-highlight-color: transparent; }
-        .apple-card { background: #1c1c1e; border-radius: 20px; padding: 20px; margin-bottom: 12px; border: 1px solid #2c2c2e; }
+        .apple-card { background: #1c1c1e; border-radius: 24px; padding: 20px; margin-bottom: 12px; border: 1px solid #2c2c2e; }
         .text-apple-green { color: #30d158; }
         .bg-apple-green { background-color: #30d158; }
-        .text-achievement-purple { color: #af52de; }
-        .border-achievement-purple { border-color: #af52de; }
-        .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.95); display: none; justify-content: center; align-items: center; z-index: 1000; }
+        .drawer { max-height: 0; overflow: hidden; transition: max-height 0.4s ease; }
+        .drawer-open { max-height: 2000px; padding-bottom: 20px; }
+        .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.9); display: none; justify-content: center; align-items: center; z-index: 1000; padding: 20px; }
         .modal-overlay.active { display: flex; }
-        .badge-anim { animation: pulse 2s infinite; }
-        @keyframes pulse { 0% { opacity: 0.6; } 50% { opacity: 1; } 100% { opacity: 0.6; } }
+        .timer-font { font-variant-numeric: tabular-nums; font-weight: 200; letter-spacing: -2px; }
     </style>
 </head>
 <body class="p-4 pb-32">
@@ -23,128 +22,161 @@
     <div class="flex justify-between items-center mb-6 px-2">
         <div>
             <h1 class="text-xl font-black italic tracking-tighter">APPLE COACH <span class="text-apple-green">V29</span></h1>
-            <p id="coach-status" class="text-[9px] text-gray-500 font-bold uppercase tracking-widest italic">Personal Trainer Activo</p>
+            <p id="coach-info" class="text-[9px] text-gray-500 font-bold uppercase tracking-widest italic">Personal Trainer Activo</p>
         </div>
         <div class="flex gap-2">
-            <button id="btn-achievements" onclick="verLogros()" class="w-10 h-10 rounded-full bg-purple-500/10 border border-purple-500/20 flex items-center justify-center text-lg">🏆</button>
-            <button onclick="document.getElementById('modal-tanita').classList.add('active')" class="w-10 h-10 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-lg">⚖️</button>
+            <button onclick="abrirLogros()" class="w-10 h-10 rounded-full bg-purple-500/10 border border-purple-500/20 flex items-center justify-center">🏆</button>
+            <button onclick="document.getElementById('modal-tanita').classList.add('active')" class="w-10 h-10 rounded-full bg-white/5 border border-white/10 flex items-center justify-center">⚖️</button>
         </div>
     </div>
 
-    <div id="last-achievement" class="hidden">
-        <div class="apple-card border-achievement-purple bg-purple-500/5 flex items-center gap-4 py-4 badge-anim">
-            <span class="text-3xl">✨</span>
-            <div>
-                <h3 class="text-[10px] font-black text-achievement-purple uppercase tracking-widest">¡Nuevo Hito Alcanzado!</h3>
-                <p id="achievement-text" class="text-xs font-bold italic"></p>
+    <div id="mision-display" class="space-y-3">
+        </div>
+
+    <div class="apple-card border-l-4 border-red-600 mt-4">
+        <div class="flex justify-between items-center mb-4">
+            <div id="display" class="text-5xl timer-font italic">00:00</div>
+            <div class="text-right">
+                <span id="bpm-val" class="text-2xl font-bold tracking-tighter text-red-500">--</span>
+                <p class="text-[8px] font-black text-gray-500 uppercase">BPM Live</p>
             </div>
         </div>
+        <div class="flex gap-2">
+            <button id="btn-principal" onclick="toggleEntreno()" class="flex-[2] bg-apple-green text-black p-4 rounded-2xl text-[10px] font-black uppercase italic">Iniciar Misión</button>
+            <button onclick="document.getElementById('equip-drawer').classList.toggle('drawer-open')" class="flex-1 bg-white/5 text-gray-400 p-4 rounded-2xl text-[10px] font-black uppercase">Config</button>
+        </div>
     </div>
 
-    <div id="mision-container" class="space-y-3">
+    <div id="equip-drawer" class="drawer px-2">
+        <div class="bg-[#1c1c1e] p-4 rounded-3xl border border-white/5 space-y-4">
+            <input type="text" id="tool-n" class="w-full bg-black p-4 rounded-xl text-xs" placeholder="Nombre Ejercicio">
+            <select id="tool-t" class="w-full bg-black p-4 rounded-xl text-xs text-gray-400">
+                <option value="fuerza">Fuerza (Pesos)</option>
+                <option value="calistenia">Calistenia (Cuerpo)</option>
+            </select>
+            <input type="number" id="tool-w" class="w-full bg-black p-4 rounded-xl text-xs" placeholder="Peso Base (kg)">
+            <button onclick="addTool()" class="w-full bg-apple-green text-black py-4 rounded-2xl font-black text-xs uppercase italic">Guardar en Memoria</button>
+            <div id="lista-tools" class="pt-4 space-y-2"></div>
         </div>
+    </div>
 
-    <div id="modal-logros" class="modal-overlay">
-        <div class="w-[90%] max-w-sm bg-[#1c1c1e] p-6 rounded-3xl border border-purple-500/30">
-            <h2 class="text-center text-xs font-black text-achievement-purple uppercase mb-6 italic tracking-widest">Salón de la Fama Biométrico</h2>
-            <div id="lista-logros" class="space-y-3">
-                </div>
-            <button onclick="document.getElementById('modal-logros').classList.remove('active')" class="w-full mt-8 py-4 bg-white/5 rounded-2xl text-[10px] font-black uppercase">Cerrar</button>
+    <div id="modal-tanita" class="modal-overlay">
+        <div class="w-full max-w-xs bg-[#1c1c1e] p-6 rounded-[32px] border border-white/10">
+            <h3 class="text-center text-[10px] font-black text-apple-green uppercase mb-6 tracking-widest">Sincronizar Tanita</h3>
+            <div class="space-y-3">
+                <input type="number" id="t-peso" class="w-full bg-black p-4 rounded-2xl text-center text-sm" placeholder="Peso (kg)">
+                <input type="number" id="t-grasa" class="w-full bg-black p-4 rounded-2xl text-center text-sm" placeholder="% Grasa">
+                <input type="number" id="t-musc" class="w-full bg-black p-4 rounded-2xl text-center text-sm" placeholder="Músculo (kg)">
+            </div>
+            <button onclick="guardarTanita()" class="w-full bg-apple-green text-black py-4 rounded-2xl mt-6 font-black text-xs uppercase italic">Actualizar Coach</button>
+            <button onclick="document.getElementById('modal-tanita').classList.remove('active')" class="w-full mt-2 text-[9px] font-bold text-gray-500 uppercase p-2">Cerrar</button>
         </div>
     </div>
 
     <script>
-        // MEMORIA Y ESTADO V29
+        // PERSISTENCIA DE DATOS
         let myTools = JSON.parse(localStorage.getItem('myToolsV29')) || [];
-        let bodyComp = JSON.parse(localStorage.getItem('bodyComp')) || { peso: 75, grasa: 22, musculo: 34 };
-        let records = JSON.parse(localStorage.getItem('biometricRecords')) || { minGrasa: 100, maxMusculo: 0 };
+        let bodyComp = JSON.parse(localStorage.getItem('bodyComp')) || { peso: 75, grasa: 20, musculo: 34 };
         let history = JSON.parse(localStorage.getItem('trainingHistory')) || [];
+        let seg=0, crono=null, running=false;
 
         function init() {
-            verificarLogros();
-            planificarSesion();
+            renderMision();
+            renderToolsList();
         }
 
-        function verificarLogros() {
-            const lastAch = document.getElementById('last-achievement');
-            const achText = document.getElementById('achievement-text');
-            let huboLogro = false;
+        // EL CEREBRO: Decide qué mostrar respetando las mejoras
+        function renderMision() {
+            const container = document.getElementById('mision-display');
+            const info = document.getElementById('coach-info');
+            container.innerHTML = '';
 
-            // Comparar Grasa
-            if (bodyComp.grasa < records.minGrasa && bodyComp.grasa > 0) {
-                records.minGrasa = bodyComp.grasa;
-                achText.innerText = `Has alcanzado tu mínimo histórico de grasa: ${bodyComp.grasa}%`;
-                huboLogro = true;
-            }
-            // Comparar Músculo
-            if (bodyComp.musculo > records.maxMusculo) {
-                records.maxMusculo = bodyComp.musculo;
-                achText.innerText = `Récord de masa muscular: ${bodyComp.musculo}kg. ¡Potencia máxima!`;
-                huboLogro = true;
+            // 1. Verificación de Descanso
+            if (history.length >= 4) {
+                info.innerText = "Estado: Recuperación Necesaria";
+                container.innerHTML = `
+                    <div class="apple-card border-l-4 border-yellow-500 py-10 text-center">
+                        <span class="text-4xl">🛌</span>
+                        <h2 class="text-lg font-black italic uppercase text-yellow-500 mt-4">Día de Descanso</h2>
+                        <p class="text-[10px] text-gray-500 mt-2 font-bold px-6">La evidencia científica sugiere 24h para supercompensar.</p>
+                        <button onclick="resetRacha()" class="mt-6 text-[8px] font-black text-gray-700 underline uppercase">Reiniciar Ciclo</button>
+                    </div>`;
+                return;
             }
 
-            if (huboLogro) {
-                localStorage.setItem('biometricRecords', JSON.stringify(records));
-                lastAch.classList.remove('hidden');
-            }
-        }
-
-        function planificarSesion() {
-            const container = document.getElementById('mision-container');
-            const status = document.getElementById('coach-status');
+            // 2. Selección de Ejercicios (Calistenia vs Fuerza)
+            info.innerText = "Coach: Misión del Día Lista";
+            let pool = bodyComp.grasa > 21 ? myTools.filter(t => t.t === 'calistenia') : myTools.filter(t => t.t === 'fuerza');
             
-            // Lógica de Descanso (Mejora anterior integrada)
-            if (history.length >= 3) {
-                status.innerText = "Coach: Modo Recuperación";
-                container.innerHTML = `<div class="apple-card border-l-4 border-yellow-500 py-10 text-center">
-                    <h2 class="text-xl font-black italic text-yellow-500 uppercase">Descanso Activo</h2>
-                    <p class="text-[10px] text-gray-400 mt-2 italic">Tu cuerpo está supercompensando. Camina 30 min.</p>
-                </div>`;
-                return;
+            if (pool.length === 0) { pool = myTools; } // Fallback si no hay específicos
+
+            pool.slice(0, 3).forEach(tool => {
+                const color = tool.t === 'calistenia' ? 'border-blue-500' : 'border-apple-green';
+                const desc = tool.t === 'calistenia' ? 'Peso Corporal' : `Carga: ${tool.w}kg`;
+                container.innerHTML += `
+                    <div class="apple-card border-l-2 ${color} py-6">
+                        <h3 class="font-black text-xs uppercase italic">${tool.n}</h3>
+                        <p class="text-[9px] text-gray-500 font-bold mt-1 uppercase">${desc} | 4 Series x 12 Reps</p>
+                    </div>`;
+            });
+        }
+
+        function toggleEntreno() {
+            if(!running) {
+                running = true;
+                document.getElementById('btn-principal').innerText = "FINALIZAR SESIÓN";
+                document.getElementById('btn-principal').classList.replace('bg-apple-green', 'bg-red-600');
+                crono = setInterval(() => { seg++; updateDisp(); }, 1000);
+            } else {
+                clearInterval(crono);
+                history.push(new Date().toDateString());
+                localStorage.setItem('trainingHistory', JSON.stringify(history));
+                location.reload();
             }
+        }
 
-            // Lógica de Misión (Mejora Calistenia/Fuerza integrada)
-            status.innerText = "Coach: Misión del Día Lista";
-            let ejercicios = bodyComp.grasa > 20 
-                ? myTools.filter(t => t.t === 'calistenia').slice(0,3)
-                : myTools.filter(t => t.t === 'fuerza').slice(0,3);
+        function updateDisp() {
+            let m=Math.floor(seg/60), s=seg%60;
+            document.getElementById('display').innerText = `${m}:${s.toString().padStart(2,'0')}`;
+        }
 
-            if(ejercicios.length === 0) {
-                container.innerHTML = `<div class="apple-card p-6 text-center text-gray-500 text-[10px] font-bold uppercase">Añade ejercicios en Config para empezar</div>`;
-                return;
+        function guardarTanita() {
+            bodyComp.peso = parseFloat(document.getElementById('t-peso').value) || bodyComp.peso;
+            bodyComp.grasa = parseFloat(document.getElementById('t-grasa').value) || bodyComp.grasa;
+            bodyComp.musculo = parseFloat(document.getElementById('t-musc').value) || bodyComp.musculo;
+            localStorage.setItem('bodyComp', JSON.stringify(bodyComp));
+            location.reload();
+        }
+
+        function addTool() {
+            const n = document.getElementById('tool-n').value;
+            const t = document.getElementById('tool-t').value;
+            const w = parseFloat(document.getElementById('tool-w').value || 0);
+            if(n) {
+                myTools.push({id: Date.now(), n, t, w});
+                localStorage.setItem('myToolsV29', JSON.stringify(myTools));
+                location.reload();
             }
+        }
 
-            ejercicios.forEach(tool => {
-                const reps = bodyComp.musculo > 34 ? "12-15 reps" : "8-10 reps";
-                container.innerHTML += `<div class="apple-card border-l-2 ${tool.t==='calistenia'?'border-blue-500':'border-apple-green'} py-5">
-                    <h3 class="font-black text-xs uppercase italic">${tool.n}</h3>
-                    <p class="text-[9px] text-gray-500 mt-1 uppercase">${tool.t==='calistenia'?'Peso Corporal':'Con Discos'} | ${reps}</p>
+        function renderToolsList() {
+            const list = document.getElementById('lista-tools');
+            list.innerHTML = '';
+            myTools.forEach(t => {
+                list.innerHTML += `<div class="flex justify-between items-center bg-black p-3 rounded-xl border border-white/5">
+                    <span class="text-[10px] font-bold uppercase">${t.n}</span>
+                    <button onclick="deleteTool(${t.id})" class="text-red-500 text-xs">✕</button>
                 </div>`;
             });
         }
 
-        function verLogros() {
-            const lista = document.getElementById('lista-logros');
-            lista.innerHTML = `
-                <div class="bg-black/40 p-4 rounded-2xl border border-white/5">
-                    <p class="text-[8px] text-gray-500 uppercase font-black">Mínima Grasa Histórica</p>
-                    <p class="text-xl font-bold text-achievement-purple italic">${records.minGrasa}%</p>
-                </div>
-                <div class="bg-black/40 p-4 rounded-2xl border border-white/5">
-                    <p class="text-[8px] text-gray-500 uppercase font-black">Máximo Músculo Logrado</p>
-                    <p class="text-xl font-bold text-apple-green italic">${records.maxMusculo}kg</p>
-                </div>
-            `;
-            document.getElementById('modal-logros').classList.add('active');
+        function deleteTool(id) {
+            myTools = myTools.filter(t => t.id !== id);
+            localStorage.setItem('myToolsV29', JSON.stringify(myTools));
+            renderToolsList();
         }
 
-        function guardarTanita() {
-            bodyComp.peso = parseFloat(document.getElementById('tanita-peso').value);
-            bodyComp.grasa = parseFloat(document.getElementById('tanita-grasa').value);
-            bodyComp.musculo = parseFloat(document.getElementById('tanita-musculo').value);
-            localStorage.setItem('bodyComp', JSON.stringify(bodyComp));
-            location.reload(); // Recarga para activar lógica de logros
-        }
+        function resetRacha() { localStorage.setItem('trainingHistory', '[]'); location.reload(); }
 
         window.onload = init;
     </script>
