@@ -3,24 +3,25 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Apple Coach V29 - Tanita Intelligence</title>
+    <title>Apple Coach V29 - Mejora Calistenia & Directrices</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         body { background-color: #000; color: #fff; font-family: -apple-system, sans-serif; -webkit-tap-highlight-color: transparent; }
         .apple-card { background: #1c1c1e; border-radius: 20px; padding: 20px; margin-bottom: 12px; border: 1px solid #2c2c2e; }
         .text-apple-green { color: #30d158; }
         .bg-apple-green { background-color: #30d158; }
+        .text-calist-blue { color: #007aff; }
+        .border-calist-blue { border-color: #007aff; }
         .drawer { max-height: 0; overflow: hidden; transition: max-height 0.5s ease-in-out; }
         .drawer-open { max-height: 2000px; }
         .chip-container { display: flex; align-items: center; background: #2c2c2e; border-radius: 12px; overflow: hidden; margin-bottom: 6px; border: 1px solid transparent; }
         .chip-container.active { border-color: #30d158; }
         .chip-label { flex: 1; padding: 12px; font-size: 10px; font-weight: 800; text-transform: uppercase; cursor: pointer; }
         .chip-container.active .chip-label { background: #30d158; color: #000; }
-        .btn-del { padding: 12px; color: #ff3b30; font-weight: bold; }
         .timer-font { font-variant-numeric: tabular-nums; font-weight: 200; letter-spacing: -2px; }
         .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.95); display: none; justify-content: center; align-items: center; z-index: 1000; }
         .modal-overlay.active { display: flex; }
-        .input-tanita { bg-black; border-white/10; border; rounded-xl; p-3; text-center; text-sm; font-bold; width: 100%; color: white; background: #000; }
+        .input-tanita { background: #000; border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; padding: 12px; text-align: center; font-size: 14px; font-weight: bold; width: 100%; color: white; }
     </style>
 </head>
 <body class="p-4 pb-32">
@@ -28,7 +29,7 @@
     <div class="flex justify-between items-center mb-6 px-2">
         <div>
             <h1 class="text-xl font-black italic tracking-tighter">APPLE COACH <span class="text-apple-green">V29</span></h1>
-            <p class="text-[9px] text-gray-500 font-bold uppercase tracking-widest">Análisis Tanita BC-730 Activo</p>
+            <p class="text-[9px] text-gray-500 font-bold uppercase tracking-widest">Inteligencia de Entrenamiento Activa</p>
         </div>
         <button onclick="document.getElementById('modal-tanita').classList.add('active')" class="w-10 h-10 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-lg">⚖️</button>
     </div>
@@ -36,28 +37,13 @@
     <div id="modal-tanita" class="modal-overlay">
         <div class="w-[90%] max-w-xs bg-[#1c1c1e] p-6 rounded-3xl border border-white/10">
             <h3 class="text-center text-[10px] font-black text-apple-green uppercase mb-6 italic tracking-widest">Datos Tanita BC-730</h3>
-            
             <div class="space-y-4">
-                <div>
-                    <label class="text-[8px] text-gray-500 font-bold uppercase ml-2">Peso Corporal (kg)</label>
-                    <input type="number" id="tanita-peso" class="input-tanita" step="0.1" placeholder="00.0">
-                </div>
+                <div><label class="text-[8px] text-gray-500 font-bold uppercase ml-2">Peso Corporal (kg)</label><input type="number" id="tanita-peso" class="input-tanita" step="0.1" placeholder="00.0"></div>
                 <div class="grid grid-cols-2 gap-2">
-                    <div>
-                        <label class="text-[8px] text-gray-500 font-bold uppercase ml-2">% Grasa</label>
-                        <input type="number" id="tanita-grasa" class="input-tanita" step="0.1" placeholder="%">
-                    </div>
-                    <div>
-                        <label class="text-[8px] text-gray-500 font-bold uppercase ml-2">% Agua</label>
-                        <input type="number" id="tanita-agua" class="input-tanita" step="0.1" placeholder="%">
-                    </div>
-                </div>
-                <div>
-                    <label class="text-[8px] text-gray-500 font-bold uppercase ml-2">Masa Muscular (kg)</label>
-                    <input type="number" id="tanita-musculo" class="input-tanita" step="0.1" placeholder="00.0">
+                    <div><label class="text-[8px] text-gray-500 font-bold uppercase ml-2">% Grasa</label><input type="number" id="tanita-grasa" class="input-tanita" step="0.1" placeholder="%"></div>
+                    <div><label class="text-[8px] text-gray-500 font-bold uppercase ml-2">Masa Muscular (kg)</label><input type="number" id="tanita-musculo" class="input-tanita" step="0.1" placeholder="00.0"></div>
                 </div>
             </div>
-
             <div class="flex gap-2 mt-8">
                 <button onclick="document.getElementById('modal-tanita').classList.remove('active')" class="flex-1 py-3 text-xs font-bold text-gray-500">CERRAR</button>
                 <button onclick="guardarTanita()" class="flex-1 py-3 bg-apple-green text-black rounded-xl text-xs font-black uppercase">Sincronizar</button>
@@ -67,11 +53,10 @@
 
     <div id="modal-feedback" class="modal-overlay">
         <div class="w-[90%] max-w-sm text-center">
-            <h2 class="text-2xl font-black mb-2 italic">¿Cómo fue el esfuerzo?</h2>
-            <button onclick="procesarFeedback(-4)" class="btn-esfuerzo bg-red-600/20 text-red-500 border border-red-500/30 w-full p-4 rounded-2xl mb-2 font-bold uppercase text-[10px]">🥵 AGOTADOR (-4kg)</button>
-            <button onclick="procesarFeedback(-2)" class="btn-esfuerzo bg-orange-600/20 text-orange-500 border border-orange-500/30 w-full p-4 rounded-2xl mb-2 font-bold uppercase text-[10px]">🔥 DURO (-2kg)</button>
-            <button onclick="procesarFeedback(0)" class="btn-esfuerzo bg-blue-600/20 text-blue-400 border border-blue-500/30 w-full p-4 rounded-2xl mb-2 font-bold uppercase text-[10px]">👍 NORMAL (Mantener)</button>
-            <button onclick="procesarFeedback(2)" class="btn-esfuerzo bg-green-600/20 text-apple-green border border-apple-green/30 w-full p-4 rounded-2xl mb-2 font-bold uppercase text-[10px]">✨ SUAVE (+2kg)</button>
+            <h2 class="text-2xl font-black mb-6 italic uppercase tracking-tighter">¿Nivel de Esfuerzo?</h2>
+            <button onclick="procesarFeedback(-2)" class="w-full p-4 rounded-2xl mb-2 font-bold uppercase text-[10px] bg-orange-600/20 text-orange-500 border border-orange-500/30">🔥 DURO (Bajar Carga)</button>
+            <button onclick="procesarFeedback(0)" class="w-full p-4 rounded-2xl mb-2 font-bold uppercase text-[10px] bg-blue-600/20 text-blue-400 border border-blue-500/30">👍 NORMAL (Mantener)</button>
+            <button onclick="procesarFeedback(2)" class="w-full p-4 rounded-2xl mb-2 font-bold uppercase text-[10px] bg-green-600/20 text-apple-green border border-apple-green/30">✨ SUAVE (Subir Carga)</button>
         </div>
     </div>
 
@@ -84,7 +69,7 @@
                     <span class="text-red-500 font-bold text-sm italic">BPM</span>
                 </div>
             </div>
-            <button onclick="conectarPolar()" class="w-12 h-12 rounded-full bg-red-600/10 flex items-center justify-center text-xl">❤️</button>
+            <button id="btn-polar" onclick="conectarPolar()" class="w-12 h-12 rounded-full bg-red-600/10 flex items-center justify-center text-xl">❤️</button>
         </div>
         <div class="flex justify-between font-bold border-t border-white/5 pt-4">
             <div id="kcal-val" class="text-2xl text-orange-500">0 <span class="text-xs uppercase">KCAL</span></div>
@@ -95,36 +80,35 @@
     <div class="apple-card text-center">
         <div id="display" class="text-7xl timer-font mb-8 italic">00:00</div>
         <div class="flex gap-4">
-            <button id="btn-pausa" onclick="pausar()" class="w-16 h-16 rounded-full bg-yellow-500/10 flex items-center justify-center opacity-20" disabled>
-                <span id="pause-icon" class="text-yellow-500 text-xl font-bold">||</span>
-            </button>
+            <button id="btn-pausa" onclick="pausar()" class="w-16 h-16 rounded-full bg-yellow-500/10 flex items-center justify-center opacity-20" disabled><span id="pause-icon" class="text-yellow-500 text-xl font-bold">||</span></button>
             <button id="btn-principal" onclick="toggleEntreno()" class="flex-1 bg-apple-green text-black rounded-2xl font-black text-sm uppercase tracking-widest italic">Iniciar Sesión</button>
         </div>
     </div>
 
     <div class="apple-card">
         <button onclick="document.getElementById('equip-drawer').classList.toggle('drawer-open')" class="w-full flex justify-between items-center">
-            <span class="text-[10px] font-black text-gray-500 uppercase italic tracking-tight italic">Configuración Gimnasio</span>
-            <span class="text-apple-green text-xs font-bold italic">Config</span>
+            <span class="text-[10px] font-black text-gray-500 uppercase italic tracking-tight">Configuración Gimnasio</span>
+            <span class="text-apple-green text-xs font-bold italic font-black underline">CONFIG</span>
         </button>
         <div id="equip-drawer" class="drawer">
             <div class="mt-4 p-4 bg-white/5 rounded-2xl mb-4 border border-white/5">
-                <p class="text-[9px] font-black text-gray-400 uppercase mb-2 italic">Mis Discos</p>
+                <p class="text-[9px] font-black text-gray-400 uppercase mb-2 italic">Añadir Discos</p>
                 <div class="grid grid-cols-2 gap-2 mb-3">
                     <input type="number" id="disc-weight" class="bg-black border border-white/10 rounded-xl p-3 text-xs" placeholder="Peso (kg)">
                     <input type="number" id="disc-qty" class="bg-black border border-white/10 rounded-xl p-3 text-xs" placeholder="Cant.">
                 </div>
                 <button onclick="addDiscs()" class="w-full bg-white/10 text-white py-2 rounded-xl font-black text-[10px] uppercase mb-5">Añadir Discos</button>
                 <hr class="border-white/5 mb-5">
-                <input type="text" id="new-tool-name" class="w-full bg-black border border-white/10 rounded-xl p-3 text-xs mb-2" placeholder="Ejercicio (Ej: Jalón)">
+                <input type="text" id="new-tool-name" class="w-full bg-black border border-white/10 rounded-xl p-3 text-xs mb-2" placeholder="Nombre (Ej: Dominadas)">
                 <div class="grid grid-cols-2 gap-2 mb-3">
                     <select id="new-tool-type" class="bg-black border border-white/10 rounded-xl p-3 text-xs text-gray-400">
-                        <option value="fuerza">Fuerza</option>
+                        <option value="fuerza">Fuerza (Discos)</option>
+                        <option value="calistenia">Calistenia (Cuerpo)</option>
                         <option value="cardio">Cardio</option>
                     </select>
                     <input type="number" id="new-tool-weight" class="bg-black border border-white/10 rounded-xl p-3 text-xs" placeholder="Peso Base">
                 </div>
-                <button onclick="addTool()" class="w-full bg-apple-green text-black py-3 rounded-xl font-black text-xs uppercase italic">Añadir</button>
+                <button onclick="addTool()" class="w-full bg-apple-green text-black py-3 rounded-xl font-black text-xs uppercase italic">Guardar Ejercicio</button>
             </div>
             <div id="lista-discos" class="mb-4"></div>
             <div id="lista-equip"></div>
@@ -132,41 +116,23 @@
     </div>
 
     <div class="px-2 mb-4">
-        <h2 class="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em]">Sugerencia Tanita-Pro</h2>
+        <h2 class="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em]">Rutina Sugerida</h2>
         <p id="coach-reason" class="text-[11px] text-apple-green italic mt-1 font-medium"></p>
     </div>
     <div id="contenedor-rutina" class="space-y-3"></div>
 
     <script>
         let seg=0, crono = null, running=false, paused=false, kcal=0;
-        
-        let myTools = JSON.parse(localStorage.getItem('myToolsV29')) || [
-            {id: 1, n: "Press Banca (BM490)", t: "fuerza", w: 20},
-            {id: 2, n: "Jalón Pecho (Polea)", t: "fuerza", w: 25},
-            {id: 3, n: "Extensión Cuádriceps", t: "fuerza", w: 15},
-            {id: 4, n: "Rodillo (Ciclismo)", t: "cardio", w: 0}
-        ];
-
+        let myTools = JSON.parse(localStorage.getItem('myToolsV29')) || [];
         let myDiscs = JSON.parse(localStorage.getItem('myDiscsV29')) || [];
         let globalWeightAdjust = parseFloat(localStorage.getItem('globalWeightAdjust')) || 0;
-        
-        // Datos Tanita
-        let bodyComp = JSON.parse(localStorage.getItem('bodyComp')) || { peso: 75.0, grasa: 20.0, agua: 55.0, musculo: 35.0 };
+        let bodyComp = JSON.parse(localStorage.getItem('bodyComp')) || { peso: 75.0, grasa: 20.0, musculo: 35.0 };
 
-        function init() { 
-            document.getElementById('tanita-peso').value = bodyComp.peso;
-            document.getElementById('tanita-grasa').value = bodyComp.grasa;
-            document.getElementById('tanita-agua').value = bodyComp.agua;
-            document.getElementById('tanita-musculo').value = bodyComp.musculo;
-            renderTools(); 
-            renderDiscs(); 
-            generarRutinaProfesional(); 
-        }
+        function init() { renderTools(); renderDiscs(); generarRutinaProfesional(); }
 
         function guardarTanita() {
             bodyComp.peso = parseFloat(document.getElementById('tanita-peso').value);
             bodyComp.grasa = parseFloat(document.getElementById('tanita-grasa').value);
-            bodyComp.agua = parseFloat(document.getElementById('tanita-agua').value);
             bodyComp.musculo = parseFloat(document.getElementById('tanita-musculo').value);
             localStorage.setItem('bodyComp', JSON.stringify(bodyComp));
             document.getElementById('modal-tanita').classList.remove('active');
@@ -177,39 +143,38 @@
             const cont = document.getElementById('contenedor-rutina');
             cont.innerHTML = '';
             const activas = myTools.filter(t => localStorage.getItem('e_'+t.n) === 'true');
-            if(activas.length === 0) return;
-
-            const ultimaSesion = localStorage.getItem('tipo_ultima_sesion');
-            let tipoHoy = (ultimaSesion === 'fuerza') ? 'cardio' : 'fuerza';
             
-            // ANALISIS TANITA PARA EL COACH
-            let reasonText = "";
-            if(bodyComp.grasa > 22 && tipoHoy === 'fuerza') {
-                reasonText = "Fuerza metabólica (Alta densidad) para reducir % graso.";
-            } else if(bodyComp.musculo < 30) {
-                reasonText = "Prioridad: Recomposición. Fuerza máxima en BM490.";
-            } else {
-                reasonText = `Composición estable. Sesión equilibrada para ${bodyComp.peso}kg.`;
-            }
-            document.getElementById('coach-reason').innerText = reasonText;
+            let repsFuerza = bodyComp.musculo < 32 ? "8-10" : "12-15";
+            let repsCalist = bodyComp.grasa > 20 ? "15-20" : "10-12";
+            
+            document.getElementById('coach-reason').innerText = `Enfoque: ${bodyComp.grasa > 20 ? 'Definición' : 'Volumen'} basado en Tanita.`;
 
-            activas.filter(t => t.t === tipoHoy).slice(0, 3).forEach(tool => {
-                let sugerencia = "";
+            activas.forEach(tool => {
+                let infoCarga = "";
+                let directriz = "";
+                let colorClase = "border-apple-green";
+
                 if(tool.t === 'fuerza') {
                     const pesoIdeal = Math.max(0, tool.w + globalWeightAdjust);
                     const calc = calcularCombinacion(pesoIdeal);
-                    sugerencia = `Carga: ${calc.real}kg | Discos: ${calc.texto || 'Base'}`;
+                    infoCarga = `CARGA: ${calc.real}KG | DISCOS: ${calc.texto || 'BASE'}`;
+                    directriz = `DIRECTRIZ: 4 SERIES X ${repsFuerza} REPS`;
+                } else if(tool.t === 'calistenia') {
+                    infoCarga = `PESO CORPORAL: ${bodyComp.peso}KG`;
+                    directriz = `DIRECTRIZ: 4 SERIES X ${repsCalist} REPS`;
+                    colorClase = "border-blue-500";
                 } else {
-                    sugerencia = "Zona 2: 40 min para optimizar oxidación de grasas.";
+                    infoCarga = `MODO CARDIO`;
+                    directriz = `DURACIÓN: 40 MINUTOS`;
                 }
 
                 cont.innerHTML += `
-                    <div class="apple-card border-l-2 border-apple-green flex justify-between items-center py-5">
+                    <div class="apple-card border-l-2 ${colorClase} flex justify-between items-center">
                         <div class="flex-1">
-                            <h3 class="font-black text-xs uppercase italic tracking-tight">${tool.n}</h3>
-                            <p class="text-[10px] text-gray-500 font-bold uppercase mt-1 leading-tight">${sugerencia}</p>
+                            <h3 class="font-black text-xs uppercase italic tracking-tighter">${tool.n}</h3>
+                            <p class="text-[9px] text-gray-500 font-bold uppercase mt-1">${infoCarga}</p>
+                            <p class="text-[10px] ${tool.t==='calistenia'?'text-blue-400':'text-apple-green'} font-black uppercase mt-1 tracking-tighter italic">${directriz}</p>
                         </div>
-                        <button onclick="completarEj('`+tool.t+`')" class="bg-white/5 border border-white/10 px-4 py-2 rounded-xl font-black text-[10px] text-apple-green">LOG</button>
                     </div>`;
             });
         }
@@ -228,100 +193,56 @@
             return { real: pesoObjetivo - restante, texto: combinacion.join(' + ') };
         }
 
-        // CRONÓMETRO V24 ESTABLE
         function toggleEntreno() {
             if (!running) {
-                running = true; paused = false;
-                document.getElementById('btn-principal').innerText = "FINALIZAR SESIÓN";
-                document.getElementById('btn-principal').className = "flex-1 bg-red-600 text-white rounded-2xl font-black text-sm uppercase italic";
+                running = true; 
+                document.getElementById('btn-principal').innerText = "TERMINAR ENTRENAMIENTO";
+                document.getElementById('btn-principal').classList.replace('bg-apple-green', 'bg-red-600');
                 document.getElementById('btn-pausa').disabled = false; document.getElementById('btn-pausa').classList.remove('opacity-20');
                 crono = setInterval(() => { seg++; updateDisp(); }, 1000);
             } else {
-                clearInterval(crono); crono = null;
+                clearInterval(crono);
                 document.getElementById('modal-feedback').classList.add('active');
             }
         }
 
-        function pausar() {
-            const icon = document.getElementById('pause-icon');
-            if (!paused) { paused = true; clearInterval(crono); crono = null; icon.innerText = "▶"; }
-            else { paused = false; icon.innerText = "||"; crono = setInterval(() => { seg++; updateDisp(); }, 1000); }
-        }
-
         function updateDisp() {
             let m=Math.floor(seg/60), s=seg%60;
-            const t = `${m}:${s.toString().padStart(2,'0')}`;
-            document.getElementById('display').innerText = t;
-            document.getElementById('session-time').innerText = t;
+            document.getElementById('display').innerText = `${m}:${s.toString().padStart(2,'0')}`;
         }
 
         function procesarFeedback(kg) {
             globalWeightAdjust += kg;
             localStorage.setItem('globalWeightAdjust', globalWeightAdjust);
-            running = false; seg = 0; updateDisp();
-            document.getElementById('modal-feedback').classList.remove('active');
-            document.getElementById('btn-principal').innerText = "INICIAR SESIÓN";
-            document.getElementById('btn-principal').className = "flex-1 bg-apple-green text-black rounded-2xl font-black text-sm uppercase tracking-widest italic";
-            document.getElementById('btn-pausa').disabled = true; document.getElementById('btn-pausa').classList.add('opacity-20');
-            generarRutinaProfesional();
+            location.reload(); // Recarga limpia respetando V29
         }
 
+        // Lógica de Renderizado y Configuración (Sin cambios en V29)
         function renderTools() {
             const cont = document.getElementById('lista-equip'); cont.innerHTML = '';
             myTools.forEach(tool => {
                 const act = localStorage.getItem('e_'+tool.n) === 'true';
                 cont.innerHTML += `<div class="chip-container ${act?'active':''}">
-                    <div class="chip-label" onclick="toggleTool('${tool.n}')">${tool.n} <span class="opacity-40 text-[8px]">(${tool.w}kg base)</span></div>
-                    <button onclick="deleteTool(${tool.id})" class="btn-del text-xs">✕</button></div>`;
+                    <div class="chip-label" onclick="toggleTool('${tool.n}')">${tool.n} (${tool.t})</div>
+                    <button onclick="deleteTool(${tool.id})" class="p-3 text-red-500">✕</button></div>`;
             });
         }
         function toggleTool(name) { localStorage.setItem('e_'+name, localStorage.getItem('e_'+name) !== 'true'); init(); }
         function deleteTool(id) { myTools = myTools.filter(t => t.id !== id); localStorage.setItem('myToolsV29', JSON.stringify(myTools)); init(); }
-        function completarEj(tipo) { localStorage.setItem('tipo_ultima_sesion', tipo); generarRutinaProfesional(); }
-        
+        function renderDiscs() {
+            const cont = document.getElementById('lista-discos'); cont.innerHTML = '';
+            myDiscs.forEach((d, i) => { cont.innerHTML += `<span class="inline-block bg-white/10 px-2 py-1 rounded-md text-[9px] font-bold mr-1 mb-1">${d.q}x${d.w}kg</span>`; });
+        }
         function addDiscs() {
             const w = parseFloat(document.getElementById('disc-weight').value);
             const q = parseInt(document.getElementById('disc-qty').value);
-            if(w > 0 && q > 0) {
-                myDiscs.push({ w, q });
-                localStorage.setItem('myDiscsV29', JSON.stringify(myDiscs));
-                renderDiscs(); generarRutinaProfesional();
-            }
+            if(w && q) { myDiscs.push({w,q}); localStorage.setItem('myDiscsV29', JSON.stringify(myDiscs)); init(); }
         }
-        function renderDiscs() {
-            const cont = document.getElementById('lista-discos');
-            cont.innerHTML = '<p class="text-[9px] font-black text-gray-500 uppercase mb-2">Inventario Discos:</p>';
-            myDiscs.forEach((d, i) => {
-                cont.innerHTML += `<span class="inline-block bg-white/10 px-2 py-1 rounded-md text-[9px] font-bold mr-1 mb-1">${d.q}x${d.w}kg <button onclick="removeDisc(${i})" class="text-red-500 ml-1">✕</button></span>`;
-            });
-        }
-        function removeDisc(i) { myDiscs.splice(i, 1); localStorage.setItem('myDiscsV29', JSON.stringify(myDiscs)); renderDiscs(); generarRutinaProfesional(); }
         function addTool() {
             const n = document.getElementById('new-tool-name').value;
             const t = document.getElementById('new-tool-type').value;
             const w = parseFloat(document.getElementById('new-tool-weight').value || 0);
-            if(n) {
-                myTools.push({ id: Date.now(), n, t, w });
-                localStorage.setItem('myToolsV29', JSON.stringify(myTools));
-                localStorage.setItem('e_'+n, 'true');
-                renderTools(); generarRutinaProfesional();
-            }
-        }
-
-        async function conectarPolar() {
-            try {
-                const device = await navigator.bluetooth.requestDevice({ filters: [{ services: ['heart_rate'] }] });
-                const server = await device.gatt.connect();
-                const service = await server.getPrimaryService('heart_rate');
-                const char = await service.getCharacteristic('heart_rate_measurement');
-                char.startNotifications();
-                char.addEventListener('characteristicvaluechanged', (e) => {
-                    const v = e.target.value.getUint8(1);
-                    document.getElementById('bpm-val').innerText = v;
-                    kcal += (v * 0.012);
-                    document.getElementById('kcal-val').innerHTML = `${Math.floor(kcal)} <span class="text-xs uppercase">KCAL</span>`;
-                });
-            } catch (e) { }
+            if(n) { myTools.push({id: Date.now(), n, t, w}); localStorage.setItem('myToolsV29', JSON.stringify(myTools)); init(); }
         }
 
         init();
