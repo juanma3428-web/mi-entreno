@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Apple Coach V26 - Inventario de Discos</title>
+    <title>Apple Coach V27 - Full Domyos & Discos</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         body { background-color: #000; color: #fff; font-family: -apple-system, sans-serif; -webkit-tap-highlight-color: transparent; }
@@ -23,11 +23,12 @@
         .btn-esfuerzo { width: 100%; padding: 18px; border-radius: 16px; font-weight: 800; text-transform: uppercase; font-size: 11px; margin-bottom: 8px; }
     </style>
 </head>
-<body class="p-4 pb-32 text-white">
+<body class="p-4 pb-32">
 
     <div id="modal-feedback" class="modal-overlay">
         <div class="w-[90%] max-w-sm text-center">
             <h2 class="text-2xl font-black mb-2 italic">¿Cómo fue el esfuerzo?</h2>
+            <p class="text-[10px] text-gray-500 mb-8 uppercase tracking-widest font-bold">Ajuste de carga para la Domyos</p>
             <button onclick="procesarFeedback(-4)" class="btn-esfuerzo bg-red-600/20 text-red-500 border border-red-500/30">🥵 AGOTADOR (-4kg)</button>
             <button onclick="procesarFeedback(-2)" class="btn-esfuerzo bg-orange-600/20 text-orange-500 border border-orange-500/30">🔥 DURO (-2kg)</button>
             <button onclick="procesarFeedback(0)" class="btn-esfuerzo bg-blue-600/20 text-blue-400 border border-blue-500/30">👍 NORMAL (Mantener)</button>
@@ -36,7 +37,7 @@
     </div>
 
     <div class="apple-card border-l-4 border-red-600">
-        <div class="flex justify-between items-start">
+        <div class="flex justify-between items-start mb-4">
             <div>
                 <p class="text-[10px] font-black text-gray-500 uppercase tracking-widest italic">Polar H10 Live</p>
                 <div class="flex items-baseline gap-1">
@@ -45,6 +46,10 @@
                 </div>
             </div>
             <button onclick="conectarPolar()" class="w-12 h-12 rounded-full bg-red-600/10 flex items-center justify-center text-xl">❤️</button>
+        </div>
+        <div class="flex justify-between font-bold border-t border-white/5 pt-4">
+            <div id="kcal-val" class="text-2xl text-orange-500">0 <span class="text-xs">KCAL</span></div>
+            <div id="session-time" class="text-2xl tracking-tighter italic">0:00</div>
         </div>
     </div>
 
@@ -60,28 +65,30 @@
 
     <div class="apple-card">
         <button onclick="document.getElementById('equip-drawer').classList.toggle('drawer-open')" class="w-full flex justify-between items-center">
-            <span class="text-[10px] font-black text-gray-500 uppercase tracking-widest italic">Inventario y Discos</span>
+            <span class="text-[10px] font-black text-gray-500 uppercase tracking-widest italic tracking-tight">Inventario BM 490 & Discos</span>
             <span class="text-apple-green text-xs font-bold italic">Configurar</span>
         </button>
         <div id="equip-drawer" class="drawer">
             <div class="mt-4 p-4 bg-white/5 rounded-2xl mb-4 border border-white/5">
-                <p class="text-[9px] font-black text-gray-400 uppercase mb-3 italic tracking-widest">Añadir Discos (Pack)</p>
-                <div class="grid grid-cols-2 gap-2 mb-2">
-                    <input type="number" id="disc-weight" class="bg-black border border-white/10 rounded-xl p-3 text-xs" placeholder="Peso Disco (kg)">
-                    <input type="number" id="disc-qty" class="bg-black border border-white/10 rounded-xl p-3 text-xs" placeholder="Nº de Discos">
+                <p class="text-[9px] font-black text-gray-400 uppercase mb-2 italic tracking-widest">Añadir Pack de Discos</p>
+                <div class="grid grid-cols-2 gap-2 mb-3">
+                    <input type="number" id="disc-weight" class="bg-black border border-white/10 rounded-xl p-3 text-xs" placeholder="Peso (kg)">
+                    <input type="number" id="disc-qty" class="bg-black border border-white/10 rounded-xl p-3 text-xs" placeholder="Cantidad">
                 </div>
-                <button onclick="addDiscs()" class="w-full bg-white/10 text-white py-3 rounded-xl font-black text-[10px] uppercase mb-4">Añadir Discos al Gimnasio</button>
-                <hr class="border-white/5 mb-4">
-                <p class="text-[9px] font-black text-gray-400 uppercase mb-3 italic tracking-widest">Añadir Ejercicio</p>
+                <button onclick="addDiscs()" class="w-full bg-white/10 text-white py-2 rounded-xl font-black text-[10px] uppercase mb-5">Guardar Discos</button>
+                
+                <hr class="border-white/5 mb-5">
+                
+                <p class="text-[9px] font-black text-gray-400 uppercase mb-2 italic tracking-widest">Nueva Herramienta / Ejercicio</p>
                 <input type="text" id="new-tool-name" class="w-full bg-black border border-white/10 rounded-xl p-3 text-xs mb-2" placeholder="Nombre (Ej: Press Banca)">
-                <div class="grid grid-cols-2 gap-2 mb-4">
+                <div class="grid grid-cols-2 gap-2 mb-3">
                     <select id="new-tool-type" class="bg-black border border-white/10 rounded-xl p-3 text-xs text-gray-400">
                         <option value="fuerza">Fuerza</option>
                         <option value="cardio">Cardio</option>
                     </select>
                     <input type="number" id="new-tool-weight" class="bg-black border border-white/10 rounded-xl p-3 text-xs" placeholder="Peso Base (kg)">
                 </div>
-                <button onclick="addTool()" class="w-full bg-apple-green text-black py-3 rounded-xl font-black text-xs uppercase italic">Añadir Herramienta</button>
+                <button onclick="addTool()" class="w-full bg-apple-green text-black py-3 rounded-xl font-black text-xs uppercase italic">Añadir a la lista</button>
             </div>
             <div id="lista-discos" class="mb-4"></div>
             <div id="lista-equip"></div>
@@ -89,31 +96,30 @@
     </div>
 
     <div class="px-2 mb-4">
-        <h2 class="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em]">Carga Real Sugerida (Domyos BM 490)</h2>
+        <h2 class="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em]">Entreno Sugerido</h2>
         <p id="coach-reason" class="text-[11px] text-apple-green italic mt-1 font-medium"></p>
     </div>
     <div id="contenedor-rutina" class="space-y-3"></div>
 
     <script>
-        let seg=0, crono = null, running=false, paused=false;
-        let myTools = JSON.parse(localStorage.getItem('myToolsV26')) || [
-            {id: 1, n: "Press Banca (BM490)", t: "fuerza", w: 20},
-            {id: 2, n: "Jalón Pecho (Polea)", t: "fuerza", w: 20}
+        let seg=0, crono = null, running=false, paused=false, kcal=0;
+        
+        let myTools = JSON.parse(localStorage.getItem('myToolsV27')) || [
+            {id: 1, n: "Press Banca (Domyos)", t: "fuerza", w: 20},
+            {id: 2, n: "Jalón Pecho (Polea)", t: "fuerza", w: 25},
+            {id: 3, n: "Extensión Cuádriceps", t: "fuerza", w: 15},
+            {id: 4, n: "Rodillo (Cardio)", t: "cardio", w: 0}
         ];
-        let myDiscs = JSON.parse(localStorage.getItem('myDiscsV26')) || [
-            {w: 5, q: 4}, {w: 2, q: 4}, {w: 1, q: 2}
-        ];
+
+        let myDiscs = JSON.parse(localStorage.getItem('myDiscsV27')) || [];
         let globalWeightAdjust = parseFloat(localStorage.getItem('globalWeightAdjust')) || 0;
 
         function init() { renderTools(); renderDiscs(); generarRutinaInteligente(); }
 
-        // Lógica de cálculo de combinación de discos
         function calcularCombinacion(pesoObjetivo) {
             let restante = pesoObjetivo;
             let combinacion = [];
-            // Ordenar discos de mayor a menor peso
             const discosSorted = [...myDiscs].sort((a,b) => b.w - a.w);
-            
             discosSorted.forEach(d => {
                 let usar = Math.min(d.q, Math.floor(restante / d.w));
                 if (usar > 0) {
@@ -133,16 +139,16 @@
             const ultimaSesion = localStorage.getItem('tipo_ultima_sesion');
             let tipoHoy = (ultimaSesion === 'fuerza') ? 'cardio' : 'fuerza';
             
-            document.getElementById('coach-reason').innerText = tipoHoy === 'cardio' ? "Cardio activo." : "Fuerza con discos disponibles.";
+            document.getElementById('coach-reason').innerText = tipoHoy === 'cardio' ? "Recuperación aeróbica." : `Fuerza (Ajuste global: ${globalWeightAdjust}kg).`;
 
             activas.filter(t => t.t === tipoHoy).slice(0, 3).forEach(tool => {
                 let sugerencia = "";
                 if(tool.t === 'fuerza') {
                     const pesoIdeal = Math.max(0, tool.w + globalWeightAdjust);
                     const calc = calcularCombinacion(pesoIdeal);
-                    sugerencia = `Carga: ${calc.real}kg<br><span class="text-gray-500 italic text-[9px] uppercase font-bold">Montaje: ${calc.texto || 'Sin discos'}</span>`;
+                    sugerencia = `Carga Real: ${calc.real}kg<br><span class="text-gray-500 italic text-[9px] font-bold">MONTAR: ${calc.texto || 'Solo barra/torre'}</span>`;
                 } else {
-                    sugerencia = "35 min ritmo constante.";
+                    sugerencia = "35-40 min ritmo Zona 2.";
                 }
 
                 cont.innerHTML += `
@@ -151,17 +157,67 @@
                             <h3 class="font-black text-xs uppercase italic tracking-tight">${tool.n}</h3>
                             <p class="text-[10px] text-gray-500 font-bold uppercase mt-1 leading-tight">${sugerencia}</p>
                         </div>
-                        <button onclick="completarEj('`+tool.t+`')" class="bg-white/5 border border-white/10 px-4 py-2 rounded-xl font-black text-[10px] text-apple-green uppercase">Log</button>
+                        <button onclick="completarEj('`+tool.t+`')" class="bg-white/5 border border-white/10 px-4 py-2 rounded-xl font-black text-[10px] text-apple-green">OK</button>
                     </div>`;
             });
         }
 
+        // --- CRONÓMETRO V24 ESTABLE ---
+        function toggleEntreno() {
+            if (!running) {
+                running = true; paused = false;
+                document.getElementById('btn-principal').innerText = "FINALIZAR";
+                document.getElementById('btn-principal').classList.replace('bg-apple-green','bg-red-600');
+                document.getElementById('btn-principal').classList.replace('text-black','text-white');
+                document.getElementById('btn-pausa').disabled = false;
+                document.getElementById('btn-pausa').classList.remove('opacity-20');
+                if(crono) clearInterval(crono);
+                crono = setInterval(() => { seg++; updateDisp(); }, 1000);
+            } else {
+                if(crono) { clearInterval(crono); crono = null; }
+                document.getElementById('modal-feedback').classList.add('active');
+            }
+        }
+
+        function pausar() {
+            if (!running) return;
+            const icon = document.getElementById('pause-icon');
+            if (!paused) {
+                paused = true; clearInterval(crono); crono = null; icon.innerText = "▶";
+            } else {
+                paused = false; icon.innerText = "||";
+                crono = setInterval(() => { seg++; updateDisp(); }, 1000);
+            }
+        }
+
+        function updateDisp() {
+            let m=Math.floor(seg/60), s=seg%60;
+            const t = `${m}:${s.toString().padStart(2,'0')}`;
+            document.getElementById('display').innerText = t;
+            document.getElementById('session-time').innerText = t;
+        }
+
+        function procesarFeedback(kg) {
+            globalWeightAdjust += kg;
+            localStorage.setItem('globalWeightAdjust', globalWeightAdjust);
+            running = false; paused = false;
+            if(crono) { clearInterval(crono); crono = null; }
+            seg = 0; updateDisp();
+            document.getElementById('btn-principal').innerText = "INICIAR SESIÓN";
+            document.getElementById('btn-principal').className = "flex-1 bg-apple-green text-black rounded-2xl font-black text-sm uppercase tracking-widest italic";
+            document.getElementById('btn-pausa').disabled = true;
+            document.getElementById('btn-pausa').classList.add('opacity-20');
+            document.getElementById('modal-feedback').classList.remove('active');
+            generarRutinaInteligente();
+        }
+
+        // --- GESTIÓN DE INVENTARIO ---
         function addDiscs() {
             const w = parseFloat(document.getElementById('disc-weight').value);
             const q = parseInt(document.getElementById('disc-qty').value);
             if(w > 0 && q > 0) {
                 myDiscs.push({ w, q });
-                localStorage.setItem('myDiscsV26', JSON.stringify(myDiscs));
+                localStorage.setItem('myDiscsV27', JSON.stringify(myDiscs));
                 renderDiscs(); generarRutinaInteligente();
             }
         }
@@ -174,41 +230,7 @@
             });
         }
 
-        function removeDisc(i) { myDiscs.splice(i, 1); localStorage.setItem('myDiscsV26', JSON.stringify(myDiscs)); renderDiscs(); generarRutinaInteligente(); }
-
-        // Funciones del Cronómetro (Estabilizadas V24)
-        function toggleEntreno() {
-            if (!running) {
-                running = true; paused = false;
-                document.getElementById('btn-principal').innerText = "FINALIZAR";
-                document.getElementById('btn-principal').className = "flex-1 bg-red-600 text-white rounded-2xl font-black text-sm uppercase italic";
-                document.getElementById('btn-pausa').disabled = false; document.getElementById('btn-pausa').classList.remove('opacity-20');
-                crono = setInterval(() => { seg++; updateDisp(); }, 1000);
-            } else {
-                clearInterval(crono); crono = null;
-                document.getElementById('modal-feedback').classList.add('active');
-            }
-        }
-
-        function pausar() {
-            const icon = document.getElementById('pause-icon');
-            if (!paused) { paused = true; clearInterval(crono); crono = null; icon.innerText = "▶"; }
-            else { paused = false; icon.innerText = "||"; crono = setInterval(() => { seg++; updateDisp(); }, 1000); }
-        }
-
-        function updateDisp() {
-            let m=Math.floor(seg/60), s=seg%60;
-            document.getElementById('display').innerText = `${m}:${s.toString().padStart(2,'0')}`;
-        }
-
-        function procesarFeedback(kg) {
-            globalWeightAdjust += kg; localStorage.setItem('globalWeightAdjust', globalWeightAdjust);
-            running = false; seg = 0; updateDisp();
-            document.getElementById('modal-feedback').classList.remove('active');
-            document.getElementById('btn-principal').innerText = "INICIAR SESIÓN";
-            document.getElementById('btn-principal').className = "flex-1 bg-apple-green text-black rounded-2xl font-black text-sm uppercase italic";
-            generarRutinaInteligente();
-        }
+        function removeDisc(i) { myDiscs.splice(i, 1); localStorage.setItem('myDiscsV27', JSON.stringify(myDiscs)); renderDiscs(); generarRutinaInteligente(); }
 
         function addTool() {
             const n = document.getElementById('new-tool-name').value;
@@ -216,7 +238,7 @@
             const w = parseFloat(document.getElementById('new-tool-weight').value || 0);
             if(n) {
                 myTools.push({ id: Date.now(), n, t, w });
-                localStorage.setItem('myToolsV26', JSON.stringify(myTools));
+                localStorage.setItem('myToolsV27', JSON.stringify(myTools));
                 localStorage.setItem('e_'+n, 'true');
                 renderTools(); generarRutinaInteligente();
             }
@@ -232,8 +254,24 @@
             });
         }
         function toggleTool(name) { localStorage.setItem('e_'+name, localStorage.getItem('e_'+name) !== 'true'); init(); }
-        function deleteTool(id) { myTools = myTools.filter(t => t.id !== id); localStorage.setItem('myToolsV26', JSON.stringify(myTools)); init(); }
+        function deleteTool(id) { myTools = myTools.filter(t => t.id !== id); localStorage.setItem('myToolsV27', JSON.stringify(myTools)); init(); }
         function completarEj(tipo) { localStorage.setItem('tipo_ultima_sesion', tipo); generarRutinaInteligente(); }
+
+        async function conectarPolar() {
+            try {
+                const device = await navigator.bluetooth.requestDevice({ filters: [{ services: ['heart_rate'] }] });
+                const server = await device.gatt.connect();
+                const service = await server.getPrimaryService('heart_rate');
+                const char = await service.getCharacteristic('heart_rate_measurement');
+                char.startNotifications();
+                char.addEventListener('characteristicvaluechanged', (e) => {
+                    const v = e.target.value.getUint8(1);
+                    document.getElementById('bpm-val').innerText = v;
+                    kcal += (v * 0.012);
+                    document.getElementById('kcal-val').innerHTML = `${Math.floor(kcal)} <span class="text-xs">KCAL</span>`;
+                });
+            } catch (e) { }
+        }
 
         init();
     </script>
