@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>APPLE COACH V29 - Discos Reparados</title>
+    <title>APPLE COACH V29 - Fixed</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         body { background-color: #000; color: #fff; font-family: -apple-system, sans-serif; -webkit-tap-highlight-color: transparent; }
@@ -33,7 +33,7 @@
     <div class="flex justify-between items-center mb-6 px-2">
         <div>
             <h1 class="text-xl font-black italic tracking-tighter uppercase">APPLE COACH <span class="text-apple-green">V29</span></h1>
-            <p class="text-[8px] text-gray-500 font-black uppercase tracking-widest italic">Inventario de Cargas Reparado</p>
+            <p class="text-[8px] text-gray-500 font-black uppercase tracking-widest italic">Ajuste de Discos y Cardio Corregido</p>
         </div>
         <div class="flex gap-2">
             <button onclick="toggleDrawer('drawer-tanita')" class="w-10 h-10 rounded-full bg-white/5 border border-white/10 flex items-center justify-center">⚖️</button>
@@ -71,11 +71,13 @@
 
     <div id="equip-drawer" class="drawer">
         <div class="apple-card bg-black mb-2 border border-white/5">
-            <p class="text-[9px] font-black text-gray-400 uppercase mb-2 italic">Mis Discos (Físicos)</p>
-            <div class="flex gap-2">
-                <input type="number" id="dw" class="flex-1 bg-[#1c1c1e] p-4 rounded-xl text-xs border border-white/10" placeholder="Kg">
-                <input type="number" id="dq" class="flex-1 bg-[#1c1c1e] p-4 rounded-xl text-xs border border-white/10" placeholder="Cant.">
-                <button onclick="addDisc()" class="bg-apple-green text-black px-6 rounded-xl text-[10px] font-black uppercase italic">Add</button>
+            <p class="text-[9px] font-black text-gray-400 uppercase mb-3 italic">Mis Discos (Físicos)</p>
+            <div class="flex flex-col gap-3">
+                <div class="flex gap-2">
+                    <input type="number" id="dw" class="flex-1 bg-[#1c1c1e] p-4 rounded-xl text-xs border border-white/10" placeholder="Kg">
+                    <input type="number" id="dq" class="flex-1 bg-[#1c1c1e] p-4 rounded-xl text-xs border border-white/10" placeholder="Cant.">
+                </div>
+                <button onclick="addDisc()" class="w-full bg-white/10 text-white p-3 rounded-xl text-[10px] font-black uppercase italic border border-white/5">Añadir al Inventario</button>
             </div>
             <div id="lista-discos" class="flex flex-wrap gap-2 mt-4"></div>
         </div>
@@ -126,13 +128,19 @@
                 const ratio = pesoFinal / (bodyComp.musculo || 35);
                 let base = ratio > 1.2 ? 6 : 10;
                 let final = Math.round((base + repsExtra) / intensityFactor);
-                return { reps: `${final}-${final+2}`, carga: `${pesoFinal}kg (Límite Físico)` };
+                return { reps: `${final}-${final+2} Reps`, carga: `${pesoFinal}kg (Límite Físico)` };
             }
             if (tool.t === 'calistenia') {
                 let final = Math.round((15 - racha) / intensityFactor);
-                return { reps: `${final}-${final+3}`, carga: "Peso Corporal" };
+                return { reps: `${final}-${final+3} Reps`, carga: "Peso Corporal" };
             }
-            return { reps: "30", carga: "Cardio" };
+            // CORRECCIÓN: CARDIO POR TIEMPO
+            if (tool.t === 'cardio') {
+                let tiempoBase = bodyComp.grasa > 20 ? 40 : 25;
+                let tiempoFinal = Math.round(tiempoBase / intensityFactor);
+                return { reps: `${tiempoFinal} Min`, carga: "Cardio" };
+            }
+            return { reps: "12 Reps", carga: "General" };
         }
 
         function generarMision() {
@@ -143,26 +151,24 @@
             pool.sort(() => 0.5 - Math.random()).slice(0, 3).forEach(t => {
                 const plan = calcularPlan(t);
                 const color = t.t === 'calistenia' ? 'border-blue-500' : (t.t === 'cardio' ? 'border-orange-500' : 'border-apple-green');
+                const labelReps = t.t === 'cardio' ? 'Tiempo' : 'Reps';
                 cont.innerHTML += `
                     <div class="apple-card border-l-4 ${color} py-6 flex justify-between items-center bg-white/[0.02]">
                         <div><h3 class="font-black text-sm uppercase italic">${t.n}</h3><p class="text-[8px] text-gray-500 font-bold uppercase mt-1">${plan.carga}</p></div>
-                        <div class="text-right"><p class="text-[14px] font-black italic text-apple-green">${plan.reps} Reps</p></div>
+                        <div class="text-right"><p class="text-[14px] font-black italic text-apple-green">${plan.reps}</p><p class="text-[6px] text-gray-600 font-bold uppercase">${labelReps}</p></div>
                     </div>`;
             });
         }
 
-        // --- REPARACIÓN ESPECÍFICA DISCOS ---
+        // FUNCIONALIDAD DISCOS REPARADA
         function addDisc() {
-            const weightInput = document.getElementById('dw');
-            const qtyInput = document.getElementById('dq');
-            const w = parseFloat(weightInput.value);
-            const q = parseInt(qtyInput.value);
-
-            if(!isNaN(w) && !isNaN(q)) {
-                myDiscs.push({w: w, q: q});
+            const wVal = parseFloat(document.getElementById('dw').value);
+            const qVal = parseInt(document.getElementById('dq').value);
+            if(!isNaN(wVal) && !isNaN(qVal)) {
+                myDiscs.push({w: wVal, q: qVal});
                 localStorage.setItem('myDiscsV29', JSON.stringify(myDiscs));
-                weightInput.value = '';
-                qtyInput.value = '';
+                document.getElementById('dw').value = '';
+                document.getElementById('dq').value = '';
                 renderDiscs();
                 generarMision();
             }
@@ -172,13 +178,21 @@
             const cont = document.getElementById('lista-discos');
             cont.innerHTML = '';
             myDiscs.forEach((d, index) => { 
-                cont.innerHTML += `<div class="bg-white/5 border border-white/10 px-3 py-2 rounded-xl text-[10px] font-black uppercase flex gap-2 items-center">${d.q}x ${d.w}kg <button onclick="removeDisc(${index})" class="text-red-500 ml-1">✕</button></div>`; 
+                cont.innerHTML += `<div class="bg-white/5 border border-white/10 px-3 py-2 rounded-xl text-[10px] font-black uppercase flex gap-2 items-center text-white">
+                    ${d.q}x ${d.w}kg 
+                    <button onclick="removeDisc(${index})" class="text-red-500 font-bold ml-1 px-1">✕</button>
+                </div>`; 
             });
         }
 
-        function removeDisc(index) { myDiscs.splice(index, 1); localStorage.setItem('myDiscsV29', JSON.stringify(myDiscs)); renderDiscs(); generarMision(); }
+        function removeDisc(index) {
+            myDiscs.splice(index, 1);
+            localStorage.setItem('myDiscsV29', JSON.stringify(myDiscs));
+            renderDiscs();
+            generarMision();
+        }
 
-        // --- RESTO DE FUNCIONES (SIN CAMBIOS) ---
+        // CRONÓMETRO Y FEEDBACK
         function toggleEntreno() {
             if(!running) {
                 running = true; pausado = false;
@@ -218,7 +232,7 @@
         function renderTools() {
             const cont = document.getElementById('lista-herramientas'); cont.innerHTML = '';
             myTools.forEach(t => {
-                cont.innerHTML += `<div class="flex justify-between items-center bg-white/5 p-4 rounded-xl mb-1 border border-white/5"><div class="flex items-center gap-3"><input type="checkbox" ${t.active!==false?'checked':''} onchange="toggleStatus(${t.id})" class="accent-apple-green w-4 h-4"><span class="text-[10px] font-bold uppercase italic">${t.n}</span></div><button onclick="deleteTool(${t.id})" class="text-red-500 text-xs font-bold">✕</button></div>`;
+                cont.innerHTML += `<div class="flex justify-between items-center bg-white/5 p-4 rounded-xl mb-1 border border-white/5"><div class="flex items-center gap-3"><input type="checkbox" ${t.active!==false?'checked':''} onchange="toggleStatus(${t.id})" class="accent-apple-green w-4 h-4"><span class="text-[10px] font-bold uppercase italic">${t.n}</span></div><button onclick="deleteTool(${t.id})" class="text-red-500 text-xs font-bold px-2">✕</button></div>`;
             });
         }
 
