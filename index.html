@@ -3,82 +3,34 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>TRAVA COACH V30</title>
+    <title>TRAVA COACH - BM 490</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap');
-        
-        :root {
-            --strava-orange: #FC6100;
-            --strava-black: #121212;
-            --strava-grey: #242428;
-        }
-
-        body { 
-            background-color: var(--strava-black); 
-            color: #FFFFFF; 
-            font-family: 'Inter', sans-serif; 
-            -webkit-tap-highlight-color: transparent; 
-        }
-
-        .strava-card { 
-            background: var(--strava-grey); 
-            border-radius: 4px; 
-            padding: 20px; 
-            margin-bottom: 16px; 
-            border-bottom: 2px solid rgba(252, 97, 0, 0.2);
-        }
-
+        :root { --strava-orange: #FC6100; --strava-black: #121212; --strava-grey: #242428; }
+        body { background-color: var(--strava-black); color: #FFFFFF; font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; }
+        .strava-card { background: var(--strava-grey); border-radius: 4px; padding: 20px; margin-bottom: 16px; border-bottom: 2px solid rgba(252, 97, 0, 0.2); }
         .text-strava { color: var(--strava-orange); }
         .bg-strava { background-color: var(--strava-orange); }
-        
         .drawer { max-height: 0; overflow: hidden; transition: max-height 0.5s ease-in-out; }
         .drawer-open { max-height: 3000px; padding-bottom: 20px; }
-        
         .timer-font { font-variant-numeric: tabular-nums; font-weight: 900; }
-        
-        .modal-overlay { 
-            background: rgba(0,0,0,0.95); 
-            display: none; 
-            position: fixed; 
-            top: 0; left: 0; width: 100%; height: 100%; 
-            z-index: 100; 
-            align-items: center; justify-content: center; 
-            padding: 20px; 
-        }
-
-        .btn-strava {
-            background-color: var(--strava-orange);
-            color: white;
-            font-weight: 900;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            border-radius: 4px;
-            transition: transform 0.1s;
-        }
-        
+        .modal-overlay { background: rgba(0,0,0,0.95); display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 100; align-items: center; justify-content: center; padding: 20px; }
+        .btn-strava { background-color: var(--strava-orange); color: white; font-weight: 900; text-transform: uppercase; border-radius: 4px; transition: transform 0.1s; border:none; cursor: pointer; }
         .btn-strava:active { transform: scale(0.98); }
-
-        input, select {
-            background: #333337 !important;
-            border: 1px solid #444448 !important;
-            border-radius: 4px !important;
-            color: white !important;
-        }
-
-        #mision-container { min-height: 50px; }
+        input, select { background: #333337 !important; border: 1px solid #444448 !important; border-radius: 4px !important; color: white !important; width: 100% !important; box-sizing: border-box !important; padding: 1rem !important; }
     </style>
 </head>
 <body class="p-4 pb-32">
 
     <div id="feedback-modal" class="modal-overlay">
         <div class="strava-card w-full border-t-4 border-strava">
-            <h2 class="text-2xl font-black uppercase mb-1">Actividad Finalizada</h2>
-            <p id="resumen-sesion" class="text-xs text-gray-400 font-bold mb-8 italic"></p>
+            <h2 class="text-2xl font-black uppercase mb-1 italic text-strava">Actividad Finalizada</h2>
+            <p id="resumen-sesion" class="text-xs text-gray-400 font-bold mb-8 italic uppercase"></p>
             <div class="grid grid-cols-1 gap-3">
-                <button onclick="saveFeedback(0.8)" class="bg-white/10 p-4 rounded text-xs font-black uppercase italic">Esfuerzo Percibido: Bajo</button>
-                <button onclick="saveFeedback(1.0)" class="bg-strava p-4 rounded text-xs font-black uppercase italic">Esfuerzo Percibido: Óptimo</button>
-                <button onclick="saveFeedback(1.3)" class="bg-white/10 p-4 rounded text-xs font-black uppercase italic">Esfuerzo Percibido: Máximo</button>
+                <button onclick="saveFeedback(0.8)" class="bg-white/10 p-4 rounded text-xs font-black uppercase italic">Bajo</button>
+                <button onclick="saveFeedback(1.0)" class="bg-strava p-4 rounded text-xs font-black uppercase italic">Óptimo</button>
+                <button onclick="saveFeedback(1.3)" class="bg-white/10 p-4 rounded text-xs font-black uppercase italic">Máximo</button>
             </div>
         </div>
     </div>
@@ -86,7 +38,7 @@
     <div class="flex justify-between items-center mb-8 px-1">
         <div>
             <h1 class="text-2xl font-black tracking-tighter uppercase italic leading-none">TRAVA <span class="text-strava">COACH</span></h1>
-            <p class="text-[9px] text-gray-500 font-bold uppercase tracking-widest mt-1">Intelligence BM 450 + Polar H10</p>
+            <p class="text-[9px] text-gray-500 font-bold uppercase tracking-widest mt-1">DOMYOS BM 490 EDITION</p>
         </div>
         <div class="flex gap-3">
             <button onclick="toggleDrawer('drawer-tanita')" class="text-xl">📊</button>
@@ -97,282 +49,197 @@
     <div id="mision-container" class="space-y-4 mb-10"></div>
 
     <div class="strava-card shadow-xl">
-        <div class="flex justify-between items-start mb-6">
-            <div>
-                <p class="text-[10px] font-black text-strava uppercase tracking-widest mb-1">Tiempo de Actividad</p>
+        <div class="flex justify-between items-start mb-6 gap-4">
+            <div class="flex-1">
+                <p class="text-[10px] font-black text-strava uppercase tracking-widest mb-1">Actividad</p>
                 <div id="display" class="text-6xl timer-font italic leading-none">00:00</div>
                 <div class="flex items-center gap-2 mt-4">
-                    <span id="kcal-val" class="text-2xl font-black text-white leading-none">0</span>
-                    <p class="text-[10px] font-bold text-gray-500 uppercase">Calorías</p>
+                    <span id="kcal-val" class="text-2xl font-black text-white">0</span>
+                    <p class="text-[10px] font-bold text-gray-500 uppercase">Kcal</p>
                 </div>
             </div>
             <div class="text-right flex flex-col items-end">
                 <p class="text-[10px] font-black text-strava uppercase tracking-widest mb-1">Pulso</p>
                 <div class="flex items-center gap-2">
-                    <span id="bpm-val" class="text-5xl font-black text-white leading-none tracking-tighter">--</span>
+                    <span id="bpm-val" class="text-5xl font-black text-white tracking-tighter">--</span>
                     <button onclick="connectPolar()" id="polar-btn" class="text-2xl">🧡</button>
                 </div>
-                <p id="polar-status" class="text-[8px] font-bold text-gray-500 uppercase mt-2 italic">Sensor Desconectado</p>
+                <p id="polar-status" class="text-[8px] font-bold text-gray-500 uppercase mt-2 italic">Polar Desconectado</p>
             </div>
         </div>
-        
         <div class="flex gap-3">
-            <button onclick="toggleEntreno()" id="btn-start" class="btn-strava p-5 flex-[2] text-sm">Iniciar Actividad</button>
+            <button onclick="toggleEntreno()" id="btn-start" class="btn-strava p-5 flex-[2] text-sm">Iniciar</button>
             <button onclick="pausarEntreno()" id="btn-pause" class="bg-white/10 text-white p-5 flex-1 rounded font-black text-xs uppercase italic border border-white/5">Pausa</button>
         </div>
     </div>
 
     <div id="drawer-tanita" class="drawer">
         <div class="strava-card bg-[#1a1a1e]">
-            <p class="text-xs font-black text-strava uppercase mb-4 tracking-widest italic">Composición Tanita</p>
+            <p class="text-xs font-black text-strava uppercase mb-4 tracking-widest italic italic">Tanita</p>
             <div class="grid grid-cols-3 gap-3">
-                <input type="number" id="tan-p" class="p-4 text-center text-sm font-bold" placeholder="PESO">
-                <input type="number" id="tan-g" class="p-4 text-center text-sm font-bold" placeholder="% GRASA">
-                <input type="number" id="tan-m" class="p-4 text-center text-sm font-bold" placeholder="% MUSC">
+                <input type="number" id="tan-p" placeholder="KG">
+                <input type="number" id="tan-g" placeholder="%G">
+                <input type="number" id="tan-m" placeholder="%M">
             </div>
-            <button onclick="saveTanita()" class="w-full mt-4 bg-white text-black py-4 rounded font-black text-xs uppercase italic">Actualizar Métricas</button>
+            <button onclick="saveTanita()" class="w-full mt-4 bg-white text-black py-4 rounded font-black text-xs uppercase">Guardar</button>
         </div>
     </div>
 
     <div id="equip-drawer" class="drawer">
         <div class="strava-card bg-[#1a1a1e] mb-2">
-            <p class="text-xs font-black text-gray-400 uppercase mb-4 tracking-widest italic">Inventario BM 450</p>
+            <p class="text-xs font-black text-gray-400 uppercase mb-4 italic italic">Inventario Discos</p>
             <div class="flex flex-col gap-3">
                 <div class="flex gap-2">
-                    <input type="number" id="dw" class="flex-1 p-4 text-sm font-bold" placeholder="Peso (kg)">
-                    <input type="number" id="dq" class="flex-1 p-4 text-sm font-bold" placeholder="Cantidad">
+                    <input type="number" id="dw" placeholder="Kg">
+                    <input type="number" id="dq" placeholder="Cant.">
                 </div>
-                <button onclick="addDisc()" class="w-full bg-white/5 text-white p-4 rounded text-xs font-black uppercase italic border border-white/10">Registrar Material</button>
+                <button onclick="addDisc()" class="w-full bg-white/5 text-white p-4 rounded text-xs font-black uppercase italic border border-white/10">Añadir</button>
             </div>
             <div id="lista-discos" class="flex flex-wrap gap-2 mt-4"></div>
         </div>
 
         <div class="strava-card bg-[#1a1a1e]">
-            <p class="text-xs font-black text-gray-400 uppercase mb-4 tracking-widest italic">Gestionar Herramientas</p>
-            <input type="text" id="tn" class="w-full p-4 text-sm font-bold mb-3" placeholder="Nombre del Ejercicio">
-            <div class="flex gap-2 mb-4">
-                <select id="tt" class="flex-1 p-4 text-xs font-bold uppercase">
-                    <option value="fuerza">Fuerza</option>
-                    <option value="calistenia">Calistenia</option>
-                    <option value="cardio">Cardio</option>
-                </select>
-                <input type="number" id="tw" class="flex-1 p-4 text-sm font-bold" placeholder="Kg Base">
-            </div>
-            <button onclick="addTool()" class="w-full btn-strava py-4 text-xs">Añadir a Memoria</button>
-            <div id="lista-herramientas" class="mt-4 space-y-2"></div>
+            <p class="text-xs font-black text-gray-400 uppercase mb-4 italic">EJERCICIOS</p>
+            <div id="lista-herramientas" class="space-y-2 mb-4"></div>
+            <button onclick="addTool()" class="btn-strava py-4 text-xs w-full">Añadir Nuevo</button>
         </div>
     </div>
 
     <script>
-        // Lógica de datos exacta del código anterior
-        const EJERCICIOS_MAESTROS = [
-            { id: 'm1', n: 'Polea Alta (Espalda)', t: 'bm450', w: 15, active: true },
-            { id: 'm2', n: 'Press Pecho Sentado', t: 'bm450', w: 20, active: true },
-            { id: 'm3', n: 'Extension Cuadriceps', t: 'bm450', w: 10, active: true },
-            { id: 'm4', n: 'Contractor Pecho', t: 'bm450', w: 10, active: true },
-            { id: 'm5', n: 'Biceps Polea Baja', t: 'bm450', w: 5, active: true },
+        const BM490_DB = [
+            { id: 'b1', n: 'Press de Banca (Barra)', t: 'fuerza', w: 20, active: true },
+            { id: 'b2', n: 'Butterfly (Pecho)', t: 'fuerza', w: 10, active: true },
+            { id: 'b3', n: 'Polea Alta Tríceps', t: 'fuerza', w: 15, active: true },
+            { id: 'b4', n: 'Jalón al Pecho (Espalda)', t: 'fuerza', w: 25, active: true },
+            { id: 'b5', n: 'Extensión Cuádriceps', t: 'fuerza', w: 15, active: true },
+            { id: 'b6', n: 'Curl Femoral Tumbado', t: 'fuerza', w: 10, active: true },
+            { id: 'b7', n: 'Curl Bíceps (Pupitre)', t: 'fuerza', w: 10, active: true },
+            { id: 'b8', n: 'Remo Bajo (Polea)', t: 'fuerza', w: 20, active: true },
             { id: 'c1', n: 'Flexiones Diamante', t: 'calistenia', w: 0, active: true },
-            { id: 'c2', n: 'Plancha Abdominal', t: 'calistenia', w: 0, active: true },
-            { id: 'c3', n: 'Zancadas Dinámicas', t: 'calistenia', w: 0, active: true }
+            { id: 'c2', n: 'Plancha Abdominal', t: 'calistenia', w: 0, active: true }
         ];
 
-        let myTools = JSON.parse(localStorage.getItem('myToolsV30')) || EJERCICIOS_MAESTROS;
+        let myTools = JSON.parse(localStorage.getItem('myToolsV31')) || BM490_DB;
         let myDiscs = JSON.parse(localStorage.getItem('myDiscsV29')) || [];
         let bodyComp = JSON.parse(localStorage.getItem('bodyComp')) || { peso: 75, grasa: 20, musculo: 35 };
-        let history = JSON.parse(localStorage.getItem('trainingHistory')) || [];
         let intensityFactor = parseFloat(localStorage.getItem('intensityFactor')) || 1.0;
         
-        let seg=0, crono=null, running=false, pausado=false;
-        let bluetoothDevice, heartRateCharacteristic, currentBPM = 0, totalKcal = 0;
+        let seg=0, crono=null, running=false, pausado=false, currentBPM = 0, totalKcal = 0;
 
         async function connectPolar() {
             try {
                 document.getElementById('polar-status').innerText = "Buscando...";
-                bluetoothDevice = await navigator.bluetooth.requestDevice({ filters: [{ services: ['heart_rate'] }] });
-                const server = await bluetoothDevice.gatt.connect();
+                const device = await navigator.bluetooth.requestDevice({ filters: [{ services: ['heart_rate'] }] });
+                const server = await device.gatt.connect();
                 const service = await server.getPrimaryService('heart_rate');
-                heartRateCharacteristic = await service.getCharacteristic('heart_rate_measurement');
-                await heartRateCharacteristic.startNotifications();
-                heartRateCharacteristic.addEventListener('characteristicvaluechanged', (e) => {
+                const characteristic = await service.getCharacteristic('heart_rate_measurement');
+                await characteristic.startNotifications();
+                characteristic.addEventListener('characteristicvaluechanged', (e) => {
                     currentBPM = e.target.value.getUint8(1);
                     document.getElementById('bpm-val').innerText = currentBPM;
                 });
                 document.getElementById('polar-status').innerText = "H10 Conectada";
-                document.getElementById('polar-status').classList.replace('text-gray-500', 'text-strava');
-            } catch (error) { document.getElementById('polar-status').innerText = "Error enlace"; }
+                document.getElementById('polar-status').style.color = "var(--strava-orange)";
+            } catch (error) { document.getElementById('polar-status').innerText = "Error Conexión"; }
         }
 
         function calculateKcal() {
             if (currentBPM > 40 && running && !pausado) {
-                let genderFactor = -55.0969; 
-                let bpmCalc = (currentBPM * 0.6309);
-                let weightCalc = (bodyComp.peso * 0.1988);
-                let total = (bpmCalc + weightCalc + (40 * 0.2017) + genderFactor) / 4.184 / 60; 
-                totalKcal += Math.max(0, total);
+                let factor = (currentBPM * 0.6309) + (bodyComp.peso * 0.1988) + (40 * 0.2017) - 55.0969;
+                totalKcal += ((factor / 4.184) / 60);
                 document.getElementById('kcal-val').innerText = Math.round(totalKcal);
             }
         }
-
-        function toggleDrawer(id) { document.getElementById(id).classList.toggle('drawer-open'); }
 
         function getCapacidadMaxima() { return myDiscs.reduce((acc, d) => acc + (parseFloat(d.w) * parseInt(d.q)), 0); }
 
         function calcularPlan(tool) {
             const maxFisico = getCapacidadMaxima();
             let repsExtra = 0, pesoFinal = tool.w;
-
-            if ((tool.t === 'fuerza' || tool.t === 'bm450') && tool.w > 0) {
-                if (tool.w > maxFisico && maxFisico > 0) {
-                    pesoFinal = maxFisico;
-                    repsExtra = Math.round((tool.w - maxFisico) * 0.6);
-                }
-                let final = Math.round((10 + repsExtra) / intensityFactor);
-                return { reps: `${final} reps`, carga: `${pesoFinal}kg` };
-            }
-            if (tool.t === 'calistenia') {
-                let final = Math.round((12 + (bodyComp.musculo / 10) - (bodyComp.grasa / 5)) / intensityFactor);
-                return { reps: `${final} reps`, carga: "Peso Corporal" };
-            }
-            return { reps: "20 min", carga: "Z2 Cardio" };
+            if (tool.t === 'fuerza' && tool.w > maxFisico) { pesoFinal = maxFisico; repsExtra = Math.round((tool.w - maxFisico) * 0.7); }
+            let finalReps = Math.round((10 + repsExtra) / intensityFactor);
+            return { reps: `${finalReps} reps`, carga: tool.t === 'calistenia' ? 'Peso Cuerpo' : `${pesoFinal}kg` };
         }
 
         function generarMision() {
             const cont = document.getElementById('mision-container');
-            let pool = myTools.filter(t => t.active !== false);
-            if (pool.length === 0) {
-                cont.innerHTML = `<p class="text-[9px] text-center text-gray-500 uppercase font-black italic">Sin ejercicios en base de datos</p>`;
-                return;
-            }
-
+            let pool = myTools.filter(t => t.active);
             let html = '';
             [...pool].sort(() => 0.5 - Math.random()).slice(0, 3).forEach(t => {
                 const plan = calcularPlan(t);
-                const badge = t.t === 'bm450' ? 'BM 450' : (t.t === 'calistenia' ? 'BODY' : 'EXTRA');
                 html += `
                     <div class="strava-card py-4 flex justify-between items-center border-l-4 border-strava bg-[#1a1a1e]">
                         <div>
-                            <span class="text-[8px] bg-strava text-white px-2 py-0.5 rounded font-black mb-2 inline-block">${badge}</span>
-                            <h3 class="font-black text-sm uppercase italic text-white">${t.n}</h3>
-                            <p class="text-[10px] text-gray-500 font-bold uppercase mt-1 italic">${plan.carga}</p>
+                            <span class="text-[8px] bg-strava px-2 py-0.5 rounded font-black uppercase mb-1 inline-block italic">BM 490</span>
+                            <h3 class="font-black text-sm uppercase italic">${t.n}</h3>
+                            <p class="text-[10px] text-gray-500 font-bold uppercase italic">${plan.carga}</p>
                         </div>
                         <div class="text-right">
                             <p class="text-xl font-black italic text-strava">${plan.reps}</p>
-                            <p class="text-[8px] text-gray-600 font-black uppercase">Esfuerzo</p>
+                            <p class="text-[8px] text-gray-600 font-black uppercase">Objetivo</p>
                         </div>
                     </div>`;
             });
-            cont.innerHTML = html;
+            cont.innerHTML = html || "<p class='text-center opacity-50 uppercase text-[10px] font-black'>Sin ejercicios activos</p>";
         }
 
-        function addDisc() {
-            const w = parseFloat(document.getElementById('dw').value);
-            const q = parseInt(document.getElementById('dq').value);
-            if(w && q) {
-                myDiscs.push({w, q});
-                localStorage.setItem('myDiscsV29', JSON.stringify(myDiscs));
-                document.getElementById('dw').value = ''; document.getElementById('dq').value = '';
-                renderDiscs(); generarMision();
-            }
-        }
-
-        function renderDiscs() {
-            const cont = document.getElementById('lista-discos'); cont.innerHTML = '';
-            myDiscs.forEach((d, i) => { 
-                cont.innerHTML += `<div class="bg-strava/10 border border-strava/20 px-3 py-2 rounded text-[10px] font-black uppercase flex gap-2 items-center italic">${d.q}x ${d.w}kg <button onclick="removeDisc(${i})" class="text-strava font-bold">✕</button></div>`; 
+        function renderTools() {
+            const cont = document.getElementById('lista-herramientas'); cont.innerHTML = '';
+            myTools.forEach(t => {
+                cont.innerHTML += `
+                    <div class="flex justify-between items-center bg-white/5 p-4 rounded border border-white/5">
+                        <div class="flex items-center gap-4 flex-1 justify-start">
+                            <input type="checkbox" ${t.active?'checked':''} onchange="toggleStatus('${t.id}')" class="w-5 h-5 accent-strava flex-shrink-0">
+                            <span class="text-[11px] font-black uppercase italic leading-tight text-left">${t.n}</span>
+                        </div>
+                        <button onclick="deleteTool('${t.id}')" class="text-strava font-bold px-2 flex-shrink-0">✕</button>
+                    </div>`;
             });
-        }
-
-        function removeDisc(i) {
-            myDiscs.splice(i, 1);
-            localStorage.setItem('myDiscsV29', JSON.stringify(myDiscs));
-            renderDiscs(); generarMision();
         }
 
         function toggleEntreno() {
             if(!running) {
                 running = true; pausado = false; seg = 0; totalKcal = 0;
                 document.getElementById('btn-start').innerText = "FINALIZAR";
-                document.getElementById('btn-start').classList.add('bg-black', 'border', 'border-strava', 'text-strava');
-                crono = setInterval(() => { 
-                    if(!pausado) { 
-                        seg++; updateDisp(); 
-                        if(seg % 2 === 0) calculateKcal(); 
-                    } 
-                }, 1000);
+                crono = setInterval(() => { if(!pausado) { seg++; updateDisp(); if(seg % 2 === 0) calculateKcal(); } }, 1000);
             } else {
                 clearInterval(crono); running = false;
-                document.getElementById('resumen-sesion').innerText = `HAS COMPLETADO EL ENTRENAMIENTO • ${Math.round(totalKcal)} KCAL`;
+                document.getElementById('resumen-sesion').innerText = `Entrenamiento Terminado • ${Math.round(totalKcal)} Kcal`;
                 document.getElementById('feedback-modal').style.display = 'flex';
             }
         }
 
-        function saveFeedback(f) {
-            localStorage.setItem('intensityFactor', f);
-            history.push({ date: new Date().toDateString(), kcal: totalKcal });
-            localStorage.setItem('trainingHistory', JSON.stringify(history));
-            location.reload();
-        }
-
-        function pausarEntreno() {
-            if(!running) return;
-            pausado = !pausado;
-            document.getElementById('btn-pause').innerText = pausado ? "REANUDAR" : "PAUSA";
-            document.getElementById('btn-pause').classList.toggle('text-strava');
-        }
-
-        function updateDisp() {
-            let m=Math.floor(seg/60), s=seg%60;
-            document.getElementById('display').innerText = `${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`;
-        }
-
+        function saveFeedback(f) { localStorage.setItem('intensityFactor', f); location.reload(); }
+        function pausarEntreno() { if(!running) return; pausado = !pausado; document.getElementById('btn-pause').innerText = pausado ? "REANUDAR" : "PAUSA"; }
+        function updateDisp() { let m=Math.floor(seg/60), s=seg%60; document.getElementById('display').innerText = `${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`; }
+        function toggleDrawer(id) { document.getElementById(id).classList.toggle('drawer-open'); }
+        function toggleStatus(id) { let t = myTools.find(x => x.id === id); if(t) { t.active = !t.active; localStorage.setItem('myToolsV31', JSON.stringify(myTools)); generarMision(); } }
+        function deleteTool(id) { myTools = myTools.filter(x => x.id !== id); localStorage.setItem('myToolsV31', JSON.stringify(myTools)); renderTools(); generarMision(); }
         function addTool() {
-            const n = document.getElementById('tn').value;
-            const t = document.getElementById('tt').value;
-            const w = parseFloat(document.getElementById('tw').value) || 0;
-            if(n) {
-                myTools.push({id: 'u'+Date.now(), n, t, w, active: true});
-                localStorage.setItem('myToolsV30', JSON.stringify(myTools));
-                renderTools(); generarMision();
-                document.getElementById('tn').value = '';
-            }
+            const n = prompt("Nombre ejercicio:");
+            if(n) { myTools.push({id: 'u'+Date.now(), n, t: 'fuerza', w: 15, active: true}); localStorage.setItem('myToolsV31', JSON.stringify(myTools)); renderTools(); generarMision(); }
         }
-
-        function renderTools() {
-            const cont = document.getElementById('lista-herramientas'); cont.innerHTML = '';
-            myTools.forEach((t) => {
-                cont.innerHTML += `<div class="flex justify-between items-center bg-white/5 p-4 rounded mb-1">
-                    <div class="flex items-center gap-3">
-                        <input type="checkbox" ${t.active?'checked':''} onchange="toggleStatus('${t.id}')" class="accent-strava w-4 h-4">
-                        <span class="text-[11px] font-black uppercase italic">${t.n}</span>
-                    </div>
-                    <button onclick="deleteTool('${t.id}')" class="text-strava font-bold px-2">✕</button>
-                </div>`;
-            });
+        function addDisc() {
+            const w = parseFloat(document.getElementById('dw').value), q = parseInt(document.getElementById('dq').value);
+            if(w && q) { myDiscs.push({w, q}); localStorage.setItem('myDiscsV29', JSON.stringify(myDiscs)); renderDiscs(); generarMision(); }
         }
-
-        function toggleStatus(id) {
-            const tool = myTools.find(t => t.id.toString() === id.toString());
-            if(tool) { tool.active = !tool.active; localStorage.setItem('myToolsV30', JSON.stringify(myTools)); generarMision(); }
+        function renderDiscs() {
+            const cont = document.getElementById('lista-discos'); cont.innerHTML = '';
+            myDiscs.forEach((d, i) => { cont.innerHTML += `<div class="bg-strava/10 border border-strava/20 px-3 py-2 rounded text-[10px] font-black uppercase flex gap-2 italic">${d.q}x ${d.w}kg <button onclick="removeDisc(${i})" class="text-strava">✕</button></div>`; });
         }
-
-        function deleteTool(id) {
-            myTools = myTools.filter(t => t.id.toString() !== id.toString());
-            localStorage.setItem('myToolsV30', JSON.stringify(myTools)); renderTools(); generarMision();
-        }
-
+        function removeDisc(i) { myDiscs.splice(i, 1); localStorage.setItem('myDiscsV29', JSON.stringify(myDiscs)); renderDiscs(); generarMision(); }
         function saveTanita() {
             bodyComp.peso = parseFloat(document.getElementById('tan-p').value) || bodyComp.peso;
             bodyComp.grasa = parseFloat(document.getElementById('tan-g').value) || bodyComp.grasa;
             bodyComp.musculo = parseFloat(document.getElementById('tan-m').value) || bodyComp.musculo;
-            localStorage.setItem('bodyComp', JSON.stringify(bodyComp));
-            location.reload();
+            localStorage.setItem('bodyComp', JSON.stringify(bodyComp)); location.reload();
         }
 
         window.onload = () => { 
             document.getElementById('tan-p').value = bodyComp.peso;
             document.getElementById('tan-g').value = bodyComp.grasa;
             document.getElementById('tan-m').value = bodyComp.musculo;
-            renderDiscs(); renderTools(); generarMision();
+            renderDiscs(); renderTools(); generarMision(); 
         };
     </script>
 </body>
