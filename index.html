@@ -86,7 +86,7 @@
     <div class="flex justify-between items-center mb-8 px-1">
         <div>
             <h1 class="text-2xl font-black tracking-tighter uppercase italic leading-none">TRAVA <span class="text-strava">COACH</span></h1>
-            <p class="text-[9px] text-gray-500 font-bold uppercase tracking-widest mt-1">Intelligence BM 450 + Polar H10</p>
+            <p class="text-[9px] text-gray-500 font-bold uppercase tracking-widest mt-1">Intelligence BM 490 + Polar H10</p>
         </div>
         <div class="flex gap-3">
             <button onclick="toggleDrawer('drawer-tanita')" class="text-xl">📊</button>
@@ -136,7 +136,7 @@
 
     <div id="equip-drawer" class="drawer">
         <div class="strava-card bg-[#1a1a1e] mb-2">
-            <p class="text-xs font-black text-gray-400 uppercase mb-4 tracking-widest italic">Inventario BM 450</p>
+            <p class="text-xs font-black text-gray-400 uppercase mb-4 tracking-widest italic">Inventario BM 490</p>
             <div class="flex flex-col gap-3">
                 <div class="flex gap-2">
                     <input type="number" id="dw" class="flex-1 p-4 text-sm font-bold" placeholder="Peso (kg)">
@@ -164,13 +164,12 @@
     </div>
 
     <script>
-        // Lógica de datos exacta del código anterior
         const EJERCICIOS_MAESTROS = [
-            { id: 'm1', n: 'Polea Alta (Espalda)', t: 'bm450', w: 15, active: true },
-            { id: 'm2', n: 'Press Pecho Sentado', t: 'bm450', w: 20, active: true },
-            { id: 'm3', n: 'Extension Cuadriceps', t: 'bm450', w: 10, active: true },
-            { id: 'm4', n: 'Contractor Pecho', t: 'bm450', w: 10, active: true },
-            { id: 'm5', n: 'Biceps Polea Baja', t: 'bm450', w: 5, active: true },
+            { id: 'm1', n: 'Polea Alta (Espalda)', t: 'bm490', w: 15, active: true },
+            { id: 'm2', n: 'Press Pecho Sentado', t: 'bm490', w: 20, active: true },
+            { id: 'm3', n: 'Extension Cuadriceps', t: 'bm490', w: 10, active: true },
+            { id: 'm4', n: 'Contractor Pecho', t: 'bm490', w: 10, active: true },
+            { id: 'm5', n: 'Biceps Polea Baja', t: 'bm490', w: 5, active: true },
             { id: 'c1', n: 'Flexiones Diamante', t: 'calistenia', w: 0, active: true },
             { id: 'c2', n: 'Plancha Abdominal', t: 'calistenia', w: 0, active: true },
             { id: 'c3', n: 'Zancadas Dinámicas', t: 'calistenia', w: 0, active: true }
@@ -221,7 +220,7 @@
             const maxFisico = getCapacidadMaxima();
             let repsExtra = 0, pesoFinal = tool.w;
 
-            if ((tool.t === 'fuerza' || tool.t === 'bm450') && tool.w > 0) {
+            if ((tool.t === 'fuerza' || tool.t === 'bm490') && tool.w > 0) {
                 if (tool.w > maxFisico && maxFisico > 0) {
                     pesoFinal = maxFisico;
                     repsExtra = Math.round((tool.w - maxFisico) * 0.6);
@@ -247,7 +246,7 @@
             let html = '';
             [...pool].sort(() => 0.5 - Math.random()).slice(0, 3).forEach(t => {
                 const plan = calcularPlan(t);
-                const badge = t.t === 'bm450' ? 'BM 450' : (t.t === 'calistenia' ? 'BODY' : 'EXTRA');
+                const badge = t.t === 'bm490' ? 'BM 490' : (t.t === 'calistenia' ? 'BODY' : 'EXTRA');
                 html += `
                     <div class="strava-card py-4 flex justify-between items-center border-l-4 border-strava bg-[#1a1a1e]">
                         <div>
