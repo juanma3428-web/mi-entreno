@@ -15,7 +15,7 @@
         .drawer { max-height: 0; overflow: hidden; transition: max-height 0.5s ease-in-out; }
         .drawer-open { max-height: 3000px; padding-bottom: 20px; }
         .timer-font { font-variant-numeric: tabular-nums; font-weight: 900; }
-        .btn-strava { background-color: var(--strava-orange); color: white; font-weight: 900; text-transform: uppercase; border-radius: 4px; width: 100%; transition: transform 0.1s; }
+        .btn-strava { background-color: var(--strava-orange); color: white; font-weight: 900; text-transform: uppercase; border-radius: 4px; width: 100%; transition: transform 0.1s; border:none; cursor: pointer; }
         .btn-strava:active { transform: scale(0.98); }
         input, select { background: #333337 !important; border: 1px solid #444448 !important; border-radius: 4px !important; color: white !important; width: 100% !important; box-sizing: border-box !important; padding: 1rem !important; }
     </style>
@@ -25,7 +25,7 @@
     <div class="flex justify-between items-center mb-8 px-1">
         <div>
             <h1 class="text-2xl font-black tracking-tighter uppercase italic leading-none text-strava">BM 490 <span class="text-white text-lg">EDITION</span></h1>
-            <p class="text-[9px] text-gray-500 font-bold uppercase tracking-widest mt-1 italic">Personal Training Dinámico</p>
+            <p class="text-[9px] text-gray-500 font-bold uppercase tracking-widest mt-1 italic">Polar H10 Connected</p>
         </div>
         <div class="flex gap-3">
             <button onclick="toggleDrawer('drawer-tanita')" class="text-xl">📊</button>
@@ -38,19 +38,20 @@
     <div class="strava-card shadow-xl">
         <div class="flex justify-between items-start mb-6 gap-4">
             <div class="flex-1">
-                <p class="text-[10px] font-black text-strava uppercase tracking-widest mb-1">Actividad</p>
+                <p class="text-[10px] font-black text-strava uppercase tracking-widest mb-1">Tiempo Actividad</p>
                 <div id="display" class="text-6xl timer-font italic leading-none">00:00</div>
                 <div class="mt-4 flex items-center gap-2">
-                    <span id="kcal-val" class="text-2xl font-black">0</span>
+                    <span id="kcal-val" class="text-2xl font-black text-white">0</span>
                     <p class="text-[10px] text-gray-500 uppercase font-bold">Kcal</p>
                 </div>
             </div>
             <div class="text-right flex flex-col items-end">
-                <p class="text-[10px] font-black text-strava uppercase tracking-widest mb-1">Polar H10</p>
+                <p class="text-[10px] font-black text-strava uppercase tracking-widest mb-1">Ritmo Cardíaco</p>
                 <div class="flex items-center gap-2">
                     <span id="bpm-val" class="text-5xl font-black">--</span>
-                    <button onclick="connectPolar()" class="text-2xl">🧡</button>
+                    <button onclick="connectPolar()" id="polar-btn" class="text-2xl hover:scale-110 transition-transform">🧡</button>
                 </div>
+                <p id="polar-status" class="text-[8px] font-bold text-gray-500 uppercase mt-2 italic">Desconectado</p>
             </div>
         </div>
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
@@ -61,57 +62,42 @@
 
     <div id="drawer-tanita" class="drawer">
         <div class="strava-card bg-[#1a1a1e]">
-            <p class="text-xs font-black text-strava uppercase mb-4 tracking-widest italic">Métricas Tanita</p>
+            <p class="text-xs font-black text-strava uppercase mb-4 tracking-widest italic">Composición Tanita</p>
             <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 <input type="number" id="tan-p" placeholder="PESO">
                 <input type="number" id="tan-g" placeholder="% GRASA">
                 <input type="number" id="tan-m" placeholder="% MUSC">
             </div>
-            <button onclick="saveTanita()" class="w-full mt-4 bg-white text-black py-4 rounded font-black text-xs uppercase">Guardar</button>
+            <button onclick="saveTanita()" class="w-full mt-4 bg-white text-black py-4 rounded font-black text-xs uppercase">Actualizar</button>
         </div>
     </div>
 
     <div id="equip-drawer" class="drawer">
         <div class="strava-card bg-[#1a1a1e] mb-2">
-            <p class="text-xs font-black text-gray-400 uppercase mb-4 italic">Inventario Discos</p>
+            <p class="text-xs font-black text-gray-400 uppercase mb-4 italic">Material Disponible</p>
             <div class="flex flex-col sm:flex-row gap-2">
                 <input type="number" id="dw" placeholder="Kg">
                 <input type="number" id="dq" placeholder="Cant.">
             </div>
-            <button onclick="addDisc()" class="w-full mt-3 bg-white/5 py-4 rounded text-xs font-black uppercase italic border border-white/10">Añadir Material</button>
+            <button onclick="addDisc()" class="w-full mt-3 bg-white/5 py-4 rounded text-xs font-black uppercase italic border border-white/10">Registrar Disco</button>
             <div id="lista-discos" class="flex flex-wrap gap-2 mt-4"></div>
         </div>
 
         <div class="strava-card bg-[#1a1a1e]">
             <p class="text-xs font-black text-gray-400 uppercase mb-4 italic">Ejercicios BM 490</p>
-            <input type="text" id="tn" placeholder="Nombre Ejercicio" class="mb-2">
-            <div class="flex flex-col sm:flex-row gap-2 mb-4">
-                <select id="tt">
-                    <option value="bm490">Domyos BM 490</option>
-                    <option value="calistenia">Calistenia</option>
-                    <option value="cardio">Cardio</option>
-                </select>
-                <input type="number" id="tw" placeholder="Kg Base">
-            </div>
-            <button onclick="addTool()" class="btn-strava py-4 text-xs mb-4">Añadir a Memoria</button>
-            <div id="lista-herramientas" class="space-y-2"></div>
+            <div id="lista-herramientas" class="space-y-2 mb-4"></div>
+            <button onclick="addTool()" class="btn-strava py-4 text-xs">Añadir Nuevo</button>
         </div>
     </div>
 
     <script>
-        // BASE DE DATOS ESPECÍFICA DOMYOS BM 490
         const BM490_DEFAULT = [
             { id: 'b1', n: 'Press de Banca (Barra)', t: 'bm490', w: 20, active: true },
             { id: 'b2', n: 'Butterfly (Pecho)', t: 'bm490', w: 10, active: true },
             { id: 'b3', n: 'Polea Alta Tríceps', t: 'bm490', w: 15, active: true },
             { id: 'b4', n: 'Jalón al Pecho (Polea)', t: 'bm490', w: 25, active: true },
             { id: 'b5', n: 'Extensión Cuádriceps', t: 'bm490', w: 15, active: true },
-            { id: 'b6', n: 'Curl Femoral Tumbado', t: 'bm490', w: 10, active: true },
-            { id: 'b7', n: 'Curl Bíceps (Pupitre)', t: 'bm490', w: 10, active: true },
-            { id: 'b8', n: 'Remo Bajo (Polea)', t: 'bm490', w: 20, active: true },
-            { id: 'b9', n: 'Press Militar (Barra)', t: 'bm490', w: 15, active: true },
-            { id: 'c1', n: 'Flexiones', t: 'calistenia', w: 0, active: true },
-            { id: 'c2', n: 'Abdominales Crunch', t: 'calistenia', w: 0, active: true }
+            { id: 'b7', n: 'Curl Bíceps (Pupitre)', t: 'bm490', w: 10, active: true }
         ];
 
         let myTools = JSON.parse(localStorage.getItem('myToolsV490')) || BM490_DEFAULT;
@@ -119,32 +105,58 @@
         let bodyComp = JSON.parse(localStorage.getItem('bodyComp')) || { peso: 75, grasa: 20, musculo: 35 };
         let intensityFactor = parseFloat(localStorage.getItem('intensityFactor')) || 1.0;
         
-        let seg=0, crono=null, running=false, pausado=false, currentBPM=0, totalKcal=0;
+        let seg=0, crono=null, running=false, pausado=false;
+        let bluetoothDevice, heartRateCharacteristic, currentBPM = 0, totalKcal = 0;
 
-        // FUNCIONES DE MOTOR DINÁMICO
+        // --- REPARACIÓN CONEXIÓN POLAR ---
+        async function connectPolar() {
+            try {
+                document.getElementById('polar-status').innerText = "Buscando...";
+                bluetoothDevice = await navigator.bluetooth.requestDevice({ 
+                    filters: [{ services: ['heart_rate'] }] 
+                });
+                const server = await bluetoothDevice.gatt.connect();
+                const service = await server.getPrimaryService('heart_rate');
+                heartRateCharacteristic = await service.getCharacteristic('heart_rate_measurement');
+                
+                await heartRateCharacteristic.startNotifications();
+                heartRateCharacteristic.addEventListener('characteristicvaluechanged', (e) => {
+                    const value = e.target.value;
+                    currentBPM = value.getUint8(1);
+                    document.getElementById('bpm-val').innerText = currentBPM;
+                });
+                
+                document.getElementById('polar-status').innerText = "H10 Conectada";
+                document.getElementById('polar-status').style.color = "var(--strava-orange)";
+            } catch (error) { 
+                console.log(error);
+                document.getElementById('polar-status').innerText = "Error Conexión"; 
+            }
+        }
+
+        function calculateKcal() {
+            if (currentBPM > 40 && running && !pausado) {
+                // Ecuación estándar para gasto calórico basado en FC y Peso
+                let factor = (currentBPM * 0.6309) + (bodyComp.peso * 0.1988) + (40 * 0.2017) - 55.0969;
+                let kcalPerSec = (factor / 4.184) / 60;
+                totalKcal += Math.max(0, kcalPerSec);
+                document.getElementById('kcal-val').innerText = Math.round(totalKcal);
+            }
+        }
+
         function getCapacidadMaxima() { return myDiscs.reduce((acc, d) => acc + (parseFloat(d.w) * parseInt(d.q)), 0); }
 
         function calcularPlan(tool) {
             const maxFisico = getCapacidadMaxima();
             let repsExtra = 0, pesoFinal = tool.w;
-
-            if (tool.t === 'bm490' && tool.w > 0) {
-                if (tool.w > maxFisico) { pesoFinal = maxFisico; repsExtra = Math.round((tool.w - maxFisico) * 0.7); }
-                let finalReps = Math.round((10 + repsExtra) / intensityFactor);
-                return { reps: `${finalReps} reps`, carga: `${pesoFinal}kg` };
-            }
-            if (tool.t === 'calistenia') {
-                let r = Math.round((12 + (bodyComp.musculo/10) - (bodyComp.grasa/5)) / intensityFactor);
-                return { reps: `${r} reps`, carga: "Peso Corporal" };
-            }
-            return { reps: "20 min", carga: "Z2" };
+            if (tool.t === 'bm490' && tool.w > maxFisico) { pesoFinal = maxFisico; repsExtra = Math.round((tool.w - maxFisico) * 0.7); }
+            let finalReps = Math.round((10 + repsExtra) / intensityFactor);
+            return { reps: `${finalReps} reps`, carga: `${pesoFinal}kg` };
         }
 
         function generarMision() {
             const cont = document.getElementById('mision-container');
             let pool = myTools.filter(t => t.active);
-            if (pool.length === 0) { cont.innerHTML = "<p class='text-center py-4 opacity-50 uppercase text-[10px] font-black'>Sin ejercicios activos</p>"; return; }
-            
             let html = '';
             [...pool].sort(() => 0.5 - Math.random()).slice(0, 3).forEach(t => {
                 const plan = calcularPlan(t);
@@ -157,85 +169,63 @@
                         </div>
                         <div class="text-right">
                             <p class="text-xl font-black italic text-strava">${plan.reps}</p>
-                            <p class="text-[8px] text-gray-600 font-black uppercase tracking-tighter">Objetivo</p>
+                            <p class="text-[8px] text-gray-600 font-black uppercase">Esfuerzo</p>
                         </div>
                     </div>`;
             });
-            cont.innerHTML = html;
+            cont.innerHTML = html || "<p class='text-center opacity-50'>Sin misiones</p>";
         }
-
-        // GESTIÓN DE INTERFAZ Y DATOS
-        function toggleDrawer(id) { document.getElementById(id).classList.toggle('drawer-open'); }
-
-        function renderTools() {
-            const cont = document.getElementById('lista-herramientas'); cont.innerHTML = '';
-            myTools.forEach(t => {
-                cont.innerHTML += `
-                    <div class="flex justify-between items-center bg-white/5 p-4 rounded border border-white/5">
-                        <div class="flex items-center gap-3">
-                            <input type="checkbox" ${t.active?'checked':''} onchange="toggleStatus('${t.id}')" class="w-4 h-4 accent-strava">
-                            <span class="text-[11px] font-black uppercase italic">${t.n}</span>
-                        </div>
-                        <button onclick="deleteTool('${t.id}')" class="text-strava font-bold px-2">✕</button>
-                    </div>`;
-            });
-        }
-
-        function toggleStatus(id) {
-            let t = myTools.find(x => x.id === id);
-            if(t) { t.active = !t.active; localStorage.setItem('myToolsV490', JSON.stringify(myTools)); generarMision(); }
-        }
-
-        function deleteTool(id) {
-            myTools = myTools.filter(x => x.id !== id);
-            localStorage.setItem('myToolsV490', JSON.stringify(myTools)); renderTools(); generarMision();
-        }
-
-        function addTool() {
-            const n = document.getElementById('tn').value;
-            const t = document.getElementById('tt').value;
-            const w = parseFloat(document.getElementById('tw').value) || 0;
-            if(n) {
-                myTools.push({id: 'u'+Date.now(), n, t, w, active: true});
-                localStorage.setItem('myToolsV490', JSON.stringify(myTools));
-                document.getElementById('tn').value = ''; renderTools(); generarMision();
-            }
-        }
-
-        function addDisc() {
-            const w = parseFloat(document.getElementById('dw').value);
-            const q = parseInt(document.getElementById('dq').value);
-            if(w && q) {
-                myDiscs.push({w, q});
-                localStorage.setItem('myDiscsV29', JSON.stringify(myDiscs));
-                document.getElementById('dw').value = ''; document.getElementById('dq').value = '';
-                renderDiscs(); generarMision();
-            }
-        }
-
-        function renderDiscs() {
-            const cont = document.getElementById('lista-discos'); cont.innerHTML = '';
-            myDiscs.forEach((d, i) => {
-                cont.innerHTML += `<div class="bg-strava/10 border border-strava/20 px-3 py-2 rounded text-[10px] font-black uppercase flex gap-2 items-center italic">${d.q}x ${d.w}kg <button onclick="removeDisc(${i})" class="text-strava">✕</button></div>`;
-            });
-        }
-
-        function removeDisc(i) { myDiscs.splice(i, 1); localStorage.setItem('myDiscsV29', JSON.stringify(myDiscs)); renderDiscs(); generarMision(); }
 
         function toggleEntreno() {
             if(!running) {
                 running = true; seg = 0; totalKcal = 0;
                 document.getElementById('btn-start').innerText = "FINALIZAR";
-                crono = setInterval(() => { if(!pausado) { seg++; updateDisp(); } }, 1000);
+                crono = setInterval(() => { 
+                    if(!pausado) { 
+                        seg++; updateDisp(); 
+                        if(seg % 2 === 0) calculateKcal();
+                    } 
+                }, 1000);
             } else {
                 clearInterval(crono); running = false;
-                let f = prompt("Esfuerzo (0.8:Bajo, 1.0:Optimo, 1.3:Máximo)", "1.0");
-                if(f) { localStorage.setItem('intensityFactor', f); location.reload(); }
+                let f = prompt("Feedback: 0.8 (Fácil), 1.0 (Óptimo), 1.3 (Máximo)", "1.0");
+                if(f) localStorage.setItem('intensityFactor', f);
+                location.reload();
             }
         }
 
-        function pausarEntreno() { pausado = !pausado; document.getElementById('btn-pause').innerText = pausado ? "REANUDAR" : "PAUSA"; }
-        function updateDisp() { let m=Math.floor(seg/60), s=seg%60; document.getElementById('display').innerText = `${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`; }
+        function updateDisp() { 
+            let m=Math.floor(seg/60), s=seg%60; 
+            document.getElementById('display').innerText = `${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`; 
+        }
+
+        function toggleDrawer(id) { document.getElementById(id).classList.toggle('drawer-open'); }
+        function renderDiscs() {
+            const cont = document.getElementById('lista-discos'); cont.innerHTML = '';
+            myDiscs.forEach((d, i) => {
+                cont.innerHTML += `<div class="bg-strava/10 border border-strava/20 px-3 py-2 rounded text-[10px] font-black uppercase flex gap-2 italic">${d.q}x ${d.w}kg <button onclick="removeDisc(${i})" class="text-strava">✕</button></div>`;
+            });
+        }
+        function removeDisc(i) { myDiscs.splice(i, 1); localStorage.setItem('myDiscsV29', JSON.stringify(myDiscs)); renderDiscs(); generarMision(); }
+        function addDisc() {
+            const w = parseFloat(document.getElementById('dw').value), q = parseInt(document.getElementById('dq').value);
+            if(w && q) { myDiscs.push({w, q}); localStorage.setItem('myDiscsV29', JSON.stringify(myDiscs)); renderDiscs(); generarMision(); }
+        }
+        function renderTools() {
+            const cont = document.getElementById('lista-herramientas'); cont.innerHTML = '';
+            myTools.forEach(t => {
+                cont.innerHTML += `
+                    <div class="flex justify-between items-center bg-white/5 p-4 rounded">
+                        <div class="flex items-center gap-3">
+                            <input type="checkbox" ${t.active?'checked':''} onchange="toggleStatus('${t.id}')" class="accent-strava">
+                            <span class="text-[11px] font-black uppercase italic">${t.n}</span>
+                        </div>
+                        <button onclick="deleteTool('${t.id}')" class="text-strava font-bold">✕</button>
+                    </div>`;
+            });
+        }
+        function toggleStatus(id) { let t = myTools.find(x => x.id === id); if(t) { t.active = !t.active; localStorage.setItem('myToolsV490', JSON.stringify(myTools)); generarMision(); } }
+        function deleteTool(id) { myTools = myTools.filter(x => x.id !== id); localStorage.setItem('myToolsV490', JSON.stringify(myTools)); renderTools(); generarMision(); }
         function saveTanita() {
             bodyComp.peso = parseFloat(document.getElementById('tan-p').value) || bodyComp.peso;
             bodyComp.grasa = parseFloat(document.getElementById('tan-g').value) || bodyComp.grasa;
@@ -243,12 +233,7 @@
             localStorage.setItem('bodyComp', JSON.stringify(bodyComp)); toggleDrawer('drawer-tanita'); generarMision();
         }
 
-        window.onload = () => { 
-            document.getElementById('tan-p').value = bodyComp.peso;
-            document.getElementById('tan-g').value = bodyComp.grasa;
-            document.getElementById('tan-m').value = bodyComp.musculo;
-            renderDiscs(); renderTools(); generarMision(); 
-        };
+        window.onload = () => { renderDiscs(); renderTools(); generarMision(); };
     </script>
 </body>
 </html>
